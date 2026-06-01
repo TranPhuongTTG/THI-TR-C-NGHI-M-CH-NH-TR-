@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -121,7 +120,7 @@
                 <div style="display: flex; flex-wrap: wrap; gap:20px;">
                     <div style="flex: 1; min-width: 320px; background:#f9f9f9; padding:15px; border-radius:10px; border: 1px solid #ddd;">
                         <h4>1. CẤU HÌNH & XUẤT QR</h4>
-                        <label>ID Phòng thi (Để nhận kết quả):</label>
+                        <label>ID Phòng thi (Cố định để nhận kết quả):</label>
                         <input type="text" id="admin-room-id" readonly style="background:#eee; font-weight:bold; color:red">
                         <label>Thời gian (phút):</label>
                         <input type="number" id="set-time" value="15" style="width:100%">
@@ -233,11 +232,16 @@
     let bank = JSON.parse(localStorage.getItem('army_bank_v_final')) || [];
     let currentActiveSet = "Chung";
     let examQuestions = [], currentQ = 0, answers = [], timeLeft = 0, timer, userData = {}, isReview = false, startTimestamp = 0;
-    let currentRoomID = "";
+    
+    // LẤY ID PHÒNG TỪ LOCALSTORAGE ĐỂ KHÔNG BỊ MẤT KHI LOAD LẠI TRANG
+    let currentRoomID = localStorage.getItem('last_room_id') || "";
 
     window.onload = function() {
         const params = new URLSearchParams(window.location.search);
-        if(params.has('room')) currentRoomID = params.get('room');
+        if(params.has('room')) {
+            currentRoomID = params.get('room');
+            localStorage.setItem('last_room_id', currentRoomID); // Lưu lại ID từ link
+        }
         if(params.has('d')) {
             try {
                 const decodedData = JSON.parse(decodeURIComponent(escape(atob(params.get('d')))));
@@ -278,7 +282,11 @@
     }
 
     function renderAdmin() {
-        if(!currentRoomID) currentRoomID = Math.floor(100000 + Math.random() * 900000).toString();
+        // NẾU CHƯA CÓ ID THÌ MỚI TẠO MỚI, NẾU CÓ TRONG LOCALSTORAGE THÌ DÙNG LẠI
+        if(!currentRoomID) {
+            currentRoomID = Math.floor(100000 + Math.random() * 900000).toString();
+            localStorage.setItem('last_room_id', currentRoomID);
+        }
         document.getElementById('admin-room-id').value = currentRoomID;
 
         renderAdminSetMenu();
@@ -290,6 +298,9 @@
             const realIdx = bank.indexOf(item);
             list.innerHTML += `<tr><td>${i+1}</td><td>${item.q}</td><td><button onclick="editQ(${realIdx})">Sửa</button> <button onclick="deleteQ(${realIdx})" style="color:red">Xóa</button></td></tr>`;
         });
+        
+        // LUÔN LUÔN LẮNG NGHE KẾT QUẢ TỪ FIREBASE KHI Ở TRANG ADMIN
+        startListeningResults();
     }
 
     function createExamQR() {
@@ -302,17 +313,18 @@
         const qrContainer = document.getElementById('qrcode');
         qrContainer.innerHTML = "";
         new QRCode(qrContainer, { text: url, width: 160, height: 160 });
-        startListeningResults();
-        alert("Đã tạo QR và mở phòng thi trực tuyến ID: " + currentRoomID);
+        alert("Đã tạo QR thành công cho phòng thi: " + currentRoomID);
     }
 
     function startListeningResults() {
         if(!currentRoomID) return;
+        // Firebase lắng nghe sự thay đổi và cập nhật bảng liên tục
         db.ref('quiz_results/' + currentRoomID).on('value', (snapshot) => {
             const list = document.getElementById('admin-result-list');
             list.innerHTML = '';
             if(snapshot.exists()) {
                 const data = snapshot.val();
+                // Sắp xếp kết quả mới nhất lên đầu
                 Object.values(data).reverse().forEach(res => {
                     list.innerHTML += `<tr><td>${res.date}</td><td>${res.duration}</td><td>${res.name}</td><td>${res.unit}</td><td>${res.set}</td><td style="color:red; font-weight:bold">${res.score}</td><td>${res.classification}</td></tr>`;
                 });
@@ -321,10 +333,11 @@
     }
 
     function clearResultsCloud() {
-        if(confirm("Xoá toàn bộ dữ liệu trên máy chủ?")) db.ref('quiz_results/' + currentRoomID).remove();
+        if(confirm("Xoá toàn bộ dữ liệu trên máy chủ của phòng thi này?")) {
+            db.ref('quiz_results/' + currentRoomID).remove();
+        }
     }
 
-    // --- HÀM XUẤT EXCEL ---
     function exportResultsToExcel() {
         const table = document.getElementById('table-results');
         const wb = XLSX.utils.table_to_book(table, {sheet: "KetQuaThi"});
@@ -347,6 +360,7 @@
         if (!USER_MAP[id] || pw !== "123") return alert("Thông tin đăng nhập sai!");
         if (!name || !rank || !extra) return alert("Vui lòng nhập đủ thông tin thí sinh!");
         userData = { name, rank, unit: USER_MAP[id], extra, id };
+        
         const params = new URLSearchParams(window.location.search);
         const setReq = params.get('s') || "Chung";
         let filteredBank = bank.filter(q => (q.set || "Chung") === setReq);
@@ -356,6 +370,7 @@
         const qty = Math.min(qtyReq, filteredBank.length);
         examQuestions = [...filteredBank].sort(() => 0.5 - Math.random()).slice(0, qty);
         timeLeft = timeReq * 60;
+        
         document.getElementById('login-screen').classList.add('hidden');
         document.getElementById('welcome-screen').classList.remove('hidden');
         document.getElementById('welcome-info').innerHTML = `<b>Thí sinh:</b> ${userData.rank} ${userData.name}<br><b>Đơn vị:</b> ${userData.unit} (${userData.extra})<br><b>Bộ đề thi:</b> ${setReq}<br><b>Số câu hỏi:</b> ${examQuestions.length} câu<br><b>Thời gian:</b> ${timeReq} phút`;
@@ -383,10 +398,6 @@
             const d = document.createElement('div');
             const isSel = answers[idx].includes(i);
             d.className = `opt ${isSel ? 'selected' : ''}`;
-            if (isReview) {
-                if (q.correct.includes(i)) d.classList.add('correct-review');
-                else if (isSel) d.classList.add('wrong-review');
-            }
             d.innerHTML = `<b>${String.fromCharCode(65+i)}.</b> &nbsp; ${o}`;
             if (!isReview) d.onclick = () => { answers[idx] = [i]; document.getElementById(`nav-${idx}`).classList.add('done'); loadQ(idx); };
             area.appendChild(d);
@@ -403,10 +414,12 @@
         examQuestions.forEach((q, i) => { if(answers[i].sort().join(',') === q.correct.sort().join(',') && answers[i].length > 0) score++; });
         const final = (score/examQuestions.length)*10;
         const cls = final >= 8 ? "GIỎI" : final >= 6.5 ? "KHÁ" : final >= 5 ? "ĐẠT" : "KHÔNG ĐẠT";
+        
         if(currentRoomID) {
             const resultData = { date: new Date().toLocaleString('vi-VN'), duration, name: userData.name, unit: userData.unit, set: (new URLSearchParams(window.location.search).get('s') || "Chung"), score: final.toFixed(1), classification: cls };
             db.ref('quiz_results/' + currentRoomID).push(resultData);
         }
+        
         document.getElementById('quiz-area').classList.add('hidden');
         document.getElementById('result-area').classList.remove('hidden');
         document.getElementById('res-grade').innerText = cls;
@@ -417,8 +430,8 @@
     function showTab(t) { 
         document.getElementById('tab-questions').classList.toggle('hidden', t!=='questions'); 
         document.getElementById('tab-results').classList.toggle('hidden', t!=='results'); 
-        if(t==='results') startListeningResults(); 
     }
+    
     function saveQuestion() {
         const q = document.getElementById('admin-q').value;
         const opts = [document.getElementById('admin-a').value, document.getElementById('admin-b').value, document.getElementById('admin-c').value, document.getElementById('admin-d').value];
@@ -430,6 +443,7 @@
         localStorage.setItem('army_bank_v_final', JSON.stringify(bank));
         clearAdminForm(); renderAdmin();
     }
+    
     function clearAdminForm() { document.getElementById('admin-q').value = ''; ['a','b','c','d'].forEach(l => document.getElementById('admin-'+l).value = ''); document.querySelectorAll('.correct-check').forEach(cb => cb.checked = false); document.getElementById('edit-index').value = "-1"; }
     function deleteQ(i) { if(confirm("Xóa?")) { bank.splice(i, 1); localStorage.setItem('army_bank_v_final', JSON.stringify(bank)); renderAdmin(); } }
     function editQ(i) {
