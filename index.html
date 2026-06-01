@@ -92,18 +92,18 @@
             <input type="password" id="login-pw" placeholder="Mật khẩu">
             
             <!-- THÊM Ô NHẬP MÃ PHÒNG THI -->
-            <label>Mã phòng thi (nếu có):</label>
-            <input type="text" id="login-room-id-input" placeholder="Nhập mã phòng để nhận kết quả" style="background:#fffbe6; border: 1px solid #ffe58f; margin-bottom: 10px; width:100%; box-sizing:border-box;">
+            <label>Mã phòng thi:</label>
+            <input type="text" id="login-room-id-input" placeholder="Nhập ID phòng thi" style="background:#fffbe6; border: 1px solid #ffe58f; margin-bottom: 10px; width:100%; box-sizing:border-box;">
 
             <div id="user-info-fields">
                 <hr style="margin:10px 0; border:0; border-top: 1px dashed #ccc;">
                 <input type="text" id="user-name" placeholder="Họ và tên thí sinh" style="margin-bottom:8px; width:100%; box-sizing:border-box;">
-                <input type="text" id="user-rank" placeholder="Cấp bậc / Chức vụ" style="margin-bottom:8px; width:100%; box-sizing:border-box;">
-                <input type="text" id="user-unit-extra" placeholder="Đơn vị cụ thể (VD: C1-D4)" style="width:100%; box-sizing:border-box;">
+                <input type="text" id="user-rank" placeholder="Cấp bậc, Chức vụ" style="margin-bottom:8px; width:100%; box-sizing:border-box;">
+                <input type="text" id="user-unit-extra" placeholder="Đơn vị cụ thể (VD: C1,D1)" style="width:100%; box-sizing:border-box;">
             </div>
             
             <button class="btn-red" style="width:100%; margin-top:15px; padding: 15px;" onclick="handleLogin()">ĐĂNG NHẬP</button>
-            <footer style="margin-top:15px; background:none; color:#666;">Bản quyền: Thượng tá Hồ Quang Lợi</footer>
+            <footer style="margin-top:15px; background:none; color:#666;">Bản quyền: Thượng tá Hồ Quang Lợi, Phó Chủ nhiệm chính trị, Trường Quân sự Quân đoàn 34</footer>
         </div>
     </div>
 
@@ -128,7 +128,7 @@
                 <div style="display: flex; flex-wrap: wrap; gap:20px;">
                     <div style="flex: 1; min-width: 320px; background:#f9f9f9; padding:15px; border-radius:10px; border: 1px solid #ddd;">
                         <h4>1. CẤU HÌNH & XUẤT QR</h4>
-                        <label>ID Phòng thi (Mỗi bộ đề 1 mã riêng):</label>
+                        <label>ID Phòng thi :</label>
                         <input type="text" id="admin-room-id" readonly style="background:#eee; font-weight:bold; color:red">
                         <label>Thời gian (phút):</label>
                         <input type="number" id="set-time" value="15" style="width:100%">
