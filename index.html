@@ -71,12 +71,6 @@
         .q-table th { background: var(--army-red); color: var(--army-yellow); position: sticky; top: 0; }
 
         footer { background: var(--army-red); color: var(--army-yellow); padding: 8px; text-align: center; font-size: 0.8rem; font-weight: bold; }
-        
-        @media (max-width: 768px) {
-            main { flex-direction: column; overflow: visible; }
-            .sidebar { width: 100%; order: 2; }
-            .quiz-container { width: 100%; order: 1; }
-        }
     </style>
 </head>
 <body oncontextmenu="return false;">
@@ -104,7 +98,7 @@
                 <input type="text" id="user-unit-extra" placeholder="Đơn vị cụ thể (VD: C1,D1)" style="width:100%; box-sizing:border-box;">
             </div>
             
-            <button class="btn-red" style="width:100%; margin-top:15px; padding: 15px;" onclick="handleLogin()">ĐĂNG NHẬP</button>
+            <button id="login-btn" class="btn-red" style="width:100%; margin-top:15px; padding: 15px;" onclick="handleLogin()">ĐĂNG NHẬP</button>
             <footer style="margin-top:15px; background:none; color:#666;">Bản quyền: Thượng tá Hồ Quang Lợi, Trường Quân sự Quân đoàn 34</footer>
         </div>
     </div>
@@ -251,15 +245,6 @@
             currentRoomID = params.get('room');
             document.getElementById('login-room-id-input').value = currentRoomID;
         }
-        if(params.has('d')) {
-            try {
-                const decodedData = JSON.parse(decodeURIComponent(escape(atob(params.get('d')))));
-                if(decodedData && decodedData.length > 0) {
-                    bank = decodedData;
-                    localStorage.setItem('army_bank_v_final', JSON.stringify(bank));
-                }
-            } catch(e) { console.error("Lỗi giải mã QR"); }
-        }
         renderAdmin();
     };
 
@@ -318,20 +303,28 @@
         const filtered = bank.filter(q => (q.set || "Chung") === currentActiveSet);
         if(filtered.length === 0) return alert("Bộ đề này chưa có câu hỏi!");
         
-        const dataStr = btoa(unescape(encodeURIComponent(JSON.stringify(filtered))));
         const t = document.getElementById('set-time').value;
-        const q = document.getElementById('set-qty').value;
-        const url = `${window.location.origin}${window.location.pathname}?room=${currentRoomID}&t=${t}&q=${q}&s=${encodeURIComponent(currentActiveSet)}&d=${dataStr}`;
+        const qCount = document.getElementById('set-qty').value;
         
-        const qrContainer = document.getElementById('qrcode');
-        qrContainer.innerHTML = "";
-        new QRCode(qrContainer, { text: url, width: 160, height: 160 });
-        startListeningResults();
-        alert(`QR Đã được tạo cho bộ đề: ${currentActiveSet}\nID phòng: ${currentRoomID}`);
+        // ĐỒNG BỘ CẤU HÌNH PHÒNG LÊN SERVER ĐỂ MÁY KHÁC TRUY CẬP ĐƯỢC
+        const config = {
+            setName: currentActiveSet,
+            time: t,
+            qty: qCount,
+            questions: filtered
+        };
+        
+        db.ref('room_configs/' + currentRoomID).set(config).then(() => {
+            const url = `${window.location.origin}${window.location.pathname}?room=${currentRoomID}`;
+            const qrContainer = document.getElementById('qrcode');
+            qrContainer.innerHTML = "";
+            new QRCode(qrContainer, { text: url, width: 160, height: 160 });
+            startListeningResults();
+            alert(`Đã kích hoạt ID: ${currentRoomID} trên toàn hệ thống.\nBây giờ thí sinh có thể nhập mã này để thi.`);
+        });
     }
 
-    function handleLogin() {
-        const params = new URLSearchParams(window.location.search);
+    async function handleLogin() {
         const id = document.getElementById('login-id').value.toUpperCase();
         const pw = document.getElementById('login-pw').value;
         
@@ -343,52 +336,43 @@
             } else return alert("Sai mật khẩu Admin!");
         }
 
-        currentRoomID = document.getElementById('login-room-id-input').value.trim();
+        const roomInput = document.getElementById('login-room-id-input').value.trim();
+        if(!roomInput) return alert("Vui lòng nhập Mã kết nối phòng thi!");
+
+        document.getElementById('login-btn').innerText = "ĐANG KẾT NỐI...";
         
-        // TÌM TÊN BỘ ĐỀ GẮN VỚI ID PHÒNG NÀY (Từ local hoặc từ URL)
-        let targetSetName = params.get('s'); 
-        if(!targetSetName) {
-            for(let s in setRoomMap) {
-                if(setRoomMap[s] === currentRoomID) { targetSetName = s; break; }
-            }
+        // LẤY CẤU HÌNH TỪ FIREBASE (GIÚP TRUY CẬP TỪ MỌI THIẾT BỊ)
+        const snapshot = await db.ref('room_configs/' + roomInput).once('value');
+        if(!snapshot.exists()) {
+            document.getElementById('login-btn').innerText = "ĐĂNG NHẬP";
+            return alert("Mã kết nối phòng thi không chính xác hoặc đã hết hạn!");
         }
 
-        // --- ĐOẠN LỌC CÂU HỎI QUAN TRỌNG ---
-        let filteredBank = [];
-        
-        // 1. Nếu quét QR và có dữ liệu 'd' trong URL, lấy dữ liệu đó làm đề thi luôn
-        if(params.has('d')) {
-             try {
-                filteredBank = JSON.parse(decodeURIComponent(escape(atob(params.get('d')))));
-             } catch(e) { console.error("Lỗi dữ liệu đề thi"); }
-        } 
-        
-        // 2. Nếu không có 'd', lọc từ bank tổng dựa trên targetSetName đã tìm được từ Mã phòng
-        if (filteredBank.length === 0 && targetSetName) {
-            filteredBank = bank.filter(q => (q.set || "Chung") === targetSetName);
-        }
-
-        if(filteredBank.length === 0) return alert("Mã kết nối phòng thi không chính xác hoặc bộ đề này chưa có câu hỏi!");
-
+        const config = snapshot.val();
         const name = document.getElementById('user-name').value;
         const rank = document.getElementById('user-rank').value;
         const extra = document.getElementById('user-unit-extra').value;
-        if (!USER_MAP[id] || pw !== "123") return alert("Thông tin đăng nhập sai!");
-        if (!name || !rank || !extra) return alert("Vui lòng nhập đủ thông tin thí sinh!");
-
-        userData = { name, rank, unit: USER_MAP[id], extra, id, setName: targetSetName || "Tự chọn" };
         
-        const qtyReq = parseInt(params.get('q')) || 20;
-        const timeReq = parseInt(params.get('t')) || 15;
-        const qty = Math.min(qtyReq, filteredBank.length);
+        if (!USER_MAP[id] || pw !== "123") {
+             document.getElementById('login-btn').innerText = "ĐĂNG NHẬP";
+             return alert("Thông tin đăng nhập đơn vị sai!");
+        }
+        if (!name || !rank || !extra) {
+             document.getElementById('login-btn').innerText = "ĐĂNG NHẬP";
+             return alert("Vui lòng nhập đủ thông tin thí sinh!");
+        }
 
-        // TRỘN NGẪU NHIÊN CÂU HỎI CỦA ĐÚNG BỘ ĐỀ ĐÓ
-        examQuestions = [...filteredBank].sort(() => 0.5 - Math.random()).slice(0, qty);
-        timeLeft = timeReq * 60;
+        currentRoomID = roomInput;
+        userData = { name, rank, unit: USER_MAP[id], extra, id, setName: config.setName };
         
+        // TRỘN NGẪU NHIÊN
+        examQuestions = [...config.questions].sort(() => 0.5 - Math.random()).slice(0, parseInt(config.qty));
+        timeLeft = parseInt(config.time) * 60;
+        
+        document.getElementById('login-btn').innerText = "ĐĂNG NHẬP";
         document.getElementById('login-screen').classList.add('hidden');
         document.getElementById('welcome-screen').classList.remove('hidden');
-        document.getElementById('welcome-info').innerHTML = `<b>Thí sinh:</b> ${userData.rank} ${userData.name}<br><b>Đơn vị:</b> ${userData.unit} (${userData.extra})<br><b>ID Phòng:</b> ${currentRoomID}<br><b>Bộ đề:</b> ${userData.setName}<br><b>Số câu hỏi:</b> ${examQuestions.length} câu<br><b>Thời gian:</b> ${timeReq} phút`;
+        document.getElementById('welcome-info').innerHTML = `<b>Thí sinh:</b> ${userData.rank} ${userData.name}<br><b>Đơn vị:</b> ${userData.unit} (${userData.extra})<br><b>ID Phòng:</b> ${currentRoomID}<br><b>Bộ đề:</b> ${userData.setName}<br><b>Số câu hỏi:</b> ${examQuestions.length} câu<br><b>Thời gian:</b> ${config.time} phút`;
     }
 
     function startExam() {
@@ -413,12 +397,10 @@
             const d = document.createElement('div');
             const isSel = answers[idx].includes(i);
             d.className = `opt ${isSel ? 'selected' : ''}`;
-            
             if (isReview) {
                 if (q.correct.includes(i)) d.classList.add('correct-review');
                 else if (isSel) d.classList.add('wrong-review');
             }
-
             d.innerHTML = `<b>${String.fromCharCode(65+i)}.</b> &nbsp; ${o}`;
             if (!isReview) d.onclick = () => { answers[idx] = [i]; document.getElementById(`nav-${idx}`).classList.add('done'); loadQ(idx); };
             area.appendChild(d);
@@ -442,7 +424,7 @@
         document.getElementById('result-area').classList.remove('hidden');
         document.getElementById('res-grade').innerText = cls;
         document.getElementById('res-grade').style.color = final >= 5 ? "var(--success)" : "var(--danger)";
-        document.getElementById('res-summary').innerHTML = `<b>Thí sinh:</b> ${userData.name}<br><b>Điểm:</b> <span style="color:red; font-weight:bold">${final.toFixed(1)}</span><br><b>Thời gian làm bài:</b> ${duration}`;
+        document.getElementById('res-summary').innerHTML = `<b>Thí sinh:</b> ${userData.name}<br><b>Điểm:</b> <span style="color:red; font-weight:bold">${final.toFixed(1)}</span><br><b>Thời gian:</b> ${duration}`;
     }
 
     function startReview() {
@@ -498,7 +480,7 @@
             b.onclick = () => loadQ(i); nav.appendChild(b);
         });
     }
-    function clearResultsCloud() { if(confirm("Xoá dữ liệu trên máy chủ phòng này?")) db.ref('quiz_results/' + currentRoomID).remove(); }
+    function clearResultsCloud() { if(confirm("Xoá dữ liệu trên máy chủ?")) db.ref('quiz_results/' + currentRoomID).remove(); }
     function exportResultsToExcel() { const table = document.getElementById('table-results'); const wb = XLSX.utils.table_to_book(table); XLSX.writeFile(wb, `KetQuaThi_${currentRoomID}.xlsx`); }
 </script>
 </body>
