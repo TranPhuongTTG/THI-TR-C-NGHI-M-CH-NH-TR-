@@ -1,4 +1,3 @@
---- START OF FILE Paste June 01, 2026 - 9:39AM ---
 
 <!DOCTYPE html>
 <html lang="vi">
@@ -61,7 +60,7 @@
         
         .btn-red { background: var(--army-red); color: var(--army-yellow); padding: 12px 25px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; text-transform: uppercase; }
 
-        .admin-panel { background: white; width: 95%; max-width: 1300px; border-radius: 15px; padding: 25px; max-height: 95vh; overflow-y: auto; color: #333; }
+        .admin-panel { background: white; width: 95%; max-width: 1200px; border-radius: 15px; padding: 25px; max-height: 95vh; overflow-y: auto; color: #333; }
         .q-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
         .q-table th, .q-table td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 13px; }
         .q-table th { background: var(--army-red); color: var(--army-yellow); position: sticky; top: 0; }
@@ -160,15 +159,15 @@
 
             <div id="tab-results" class="hidden">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <h3>DANH SÁCH THÍ SINH ĐÃ THI (THỜI GIAN THỰC)</h3>
+                    <h3>DANH SÁCH THÍ SINH ĐÃ THI</h3>
                     <button class="btn-red" onclick="exportResults()">XUẤT EXCEL (MÔ PHỎNG)</button>
                 </div>
                 <div style="overflow-y:auto; max-height: 75vh;">
                     <table class="q-table">
                         <thead>
                             <tr>
-                                <th>Thời điểm nộp</th>
-                                <th>Thời gian làm</th>
+                                <th>Thời gian nộp</th>
+                                <th>Thời gian làm bài</th>
                                 <th>Họ và Tên</th>
                                 <th>Cấp bậc/Chức vụ</th>
                                 <th>Khối Đơn vị</th>
@@ -229,15 +228,13 @@
 <script>
     const USER_MAP = {"D1":"Tiểu đoàn 1", "D2":"Tiểu đoàn 2", "D3":"Tiểu đoàn 3", "D4":"Tiểu đoàn 4", "D5":"Tiểu đoàn 5", "D6":"Tiểu đoàn 6", "P1":"Phòng Đào tạo", "P2":"Phòng Tham mưu hành chính", "P3":"Phòng Chính trị", "P4":"Phòng Hậu cần kỹ thuật", "K1":"Khoa KHXH & NV", "K2":"Khoa Binh chủng hợp thành", "K3":"Khoa Binh chủng", "K4":"Khoa Chuyên môn kỹ thuật", "ADMIN":"BỘ PHẬN QUẢN TRỊ"};
     
-    // Khởi tạo dữ liệu
     let bank = JSON.parse(localStorage.getItem('army_bank_v_final')) || [];
     let savedConfig = JSON.parse(localStorage.getItem('army_config')) || { time: 15, qty: 20 };
     let globalResults = JSON.parse(localStorage.getItem('army_results_all')) || [];
 
     let examQuestions = [], currentQ = 0, answers = [], timeLeft = 0, timer, userData = {}, isReview = false;
-    let examStartTime = null; // Theo dõi thời gian thực bắt đầu làm bài
+    let startTimestamp = 0; // Để tính thời gian thực làm bài
 
-    // Hiển thị Tab Admin
     function showTab(tabId) {
         document.getElementById('tab-questions').classList.toggle('hidden', tabId !== 'questions');
         document.getElementById('tab-results').classList.toggle('hidden', tabId !== 'results');
@@ -248,7 +245,7 @@
     function updateHint() {
         const id = document.getElementById('login-id').value.toUpperCase();
         document.getElementById('unit-hint').innerText = USER_MAP[id] ? `( ${USER_MAP[id]} )` : "(Chưa xác định)";
-        // YÊU CẦU: Nếu là ADMIN thì ẩn các trường nhập thông tin
+        // KHẮC PHỤC: Nếu là ADMIN thì ẩn vùng nhập thông tin để không bị bắt buộc nhập
         document.getElementById('user-info-fields').style.display = (id === "ADMIN") ? "none" : "block";
     }
 
@@ -269,21 +266,26 @@
         const id = document.getElementById('login-id').value.toUpperCase();
         const pw = document.getElementById('login-pw').value;
         
-        // ADMIN LOGIN: Không cần thông tin phụ
-        if (id === "ADMIN" && pw === "HQL123") {
-            document.getElementById('login-screen').classList.add('hidden');
-            document.getElementById('admin-screen').classList.remove('hidden');
-            renderAdmin(); return;
+        // KHẮC PHỤC TRƯỜNG HỢP ADMIN: Kiểm tra ngay lập tức, không check name/rank
+        if (id === "ADMIN") {
+            if (pw === "HQL123") {
+                document.getElementById('login-screen').classList.add('hidden');
+                document.getElementById('admin-screen').classList.remove('hidden');
+                renderAdmin(); 
+                return;
+            } else {
+                return alert("Sai mật khẩu quản trị!");
+            }
         }
 
+        // Với tài khoản thường
         const name = document.getElementById('user-name').value;
         const rank = document.getElementById('user-rank').value;
         const unitExtra = document.getElementById('user-unit-extra').value;
 
         if (!USER_MAP[id] || pw !== "123") return alert("Sai thông tin đăng nhập!");
-        if (!name || !rank || !unitExtra) return alert("Vui lòng nhập đủ thông tin cá nhân!");
+        if (!name || !rank || !unitExtra) return alert("Đồng chí vui lòng nhập đầy đủ thông tin cá nhân!");
 
-        // Phân loại khối đơn vị
         let unitGroup = "Khối khác";
         if(id.startsWith('D')) unitGroup = "Khối Tiểu đoàn";
         else if(id.startsWith('P')) unitGroup = "Khối Phòng";
@@ -325,7 +327,7 @@
             list.innerHTML += `
                 <tr>
                     <td>${res.date}</td>
-                    <td>${res.duration || 'N/A'}</td>
+                    <td style="color:blue; font-weight:bold">${res.duration || '---'}</td>
                     <td><b>${res.name}</b></td>
                     <td>${res.rank}</td>
                     <td>${res.unitGroup}</td>
@@ -369,7 +371,7 @@
         document.getElementById('disp-name').innerText = `${userData.rank} ${userData.name}`;
         document.getElementById('disp-unit').innerText = `Đơn vị: ${userData.unitName}`;
         
-        examStartTime = Date.now(); // Ghi nhận thời điểm bắt đầu (thời gian thực)
+        startTimestamp = Date.now(); // Ghi nhận thời điểm bắt đầu thực tế
         
         answers = examQuestions.map(() => []); initNav(); loadQ(0);
         timer = setInterval(() => {
@@ -418,10 +420,12 @@
     function submitExam() {
         if(!isReview && !confirm("Đồng chí có chắc chắn nộp bài?")) return; clearInterval(timer);
         
-        // Tính toán thời gian làm bài thực tế
-        const submitTime = Date.now();
-        const diffSecs = Math.floor((submitTime - examStartTime) / 1000);
-        const durationStr = `${Math.floor(diffSecs/60)}p ${diffSecs%60}s`;
+        // Tính toán thời gian thực làm bài
+        let timeEnd = Date.now();
+        let diff = Math.floor((timeEnd - startTimestamp) / 1000);
+        let minutes = Math.floor(diff / 60);
+        let seconds = diff % 60;
+        let durationText = `${minutes} phút ${seconds} giây`;
 
         document.getElementById('quiz-area').classList.add('hidden');
         document.getElementById('result-area').classList.remove('hidden');
@@ -437,16 +441,14 @@
         document.getElementById('res-summary').innerHTML = `
             <b>Họ tên:</b> ${userData.name}<br>
             <b>Đơn vị:</b> ${userData.unitName}<br>
-            <b>Thời gian làm:</b> ${durationStr}<hr>
+            <b>Thời gian làm bài:</b> ${durationText}<hr>
             Đúng: ${score}/${examQuestions.length} câu<br>
             Điểm: <span style="font-size:1.8rem; color:red">${final.toFixed(1)}</span><br>
-            Xếp loại: <b>${classification}</b>
-        `;
+            Xếp loại: <b>${classification}</b>`;
 
-        // LƯU KẾT QUẢ VỚI THÔNG TIN THỜI GIAN THỰC
         const resultObj = {
             date: new Date().toLocaleString('vi-VN'),
-            duration: durationStr,
+            duration: durationText, // Ghi lại thời gian thực
             name: userData.name,
             rank: userData.rank,
             unitGroup: userData.unitGroup,
@@ -478,7 +480,7 @@
     }
 
     function exportResults() {
-        alert("Dữ liệu đã được lưu trữ trên hệ thống ADMIN. Đồng chí có thể sao chép trực tiếp từ bảng kết quả.");
+        alert("Tính năng xuất Excel đang được nâng cấp.");
     }
 </script>
 </body>
