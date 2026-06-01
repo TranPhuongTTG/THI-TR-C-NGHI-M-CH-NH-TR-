@@ -20,7 +20,11 @@
             --white: #ffffff; --bg: #f0f2f5; --success: #27ae60; --danger: #c0392b;
             --army-red: #d41818; --army-yellow: #ffeb3b;
         }
-        body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); margin: 0; overflow-x: hidden; height: 100vh; display: flex; flex-direction: column; }
+        body { 
+            font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); margin: 0; overflow-x: hidden; height: 100vh; display: flex; flex-direction: column; 
+            /* CHỐNG BÔI ĐEN VĂN BẢN TOÀN TRANG */
+            -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;
+        }
         .hidden { display: none !important; }
 
         .overlay { position: fixed; inset: 0; background: radial-gradient(circle, var(--blue-main), var(--navy)); display: flex; align-items: center; justify-content: center; z-index: 1000; flex-direction: column; padding: 10px; overflow-y: auto; }
@@ -72,7 +76,7 @@
         }
     </style>
 </head>
-<body>
+<body oncontextmenu="return false;"> <!-- CHỐNG CHUỘT PHẢI TOÀN TRANG -->
 
     <div id="login-screen" class="overlay">
         <div class="card">
@@ -87,6 +91,10 @@
             <label>Mật khẩu:</label>
             <input type="password" id="login-pw" placeholder="Mật khẩu">
             
+            <!-- THÊM Ô NHẬP MÃ PHÒNG THI -->
+            <label>Mã phòng thi (nếu có):</label>
+            <input type="text" id="login-room-id-input" placeholder="Nhập mã phòng để nhận kết quả" style="background:#fffbe6; border: 1px solid #ffe58f; margin-bottom: 10px; width:100%; box-sizing:border-box;">
+
             <div id="user-info-fields">
                 <hr style="margin:10px 0; border:0; border-top: 1px dashed #ccc;">
                 <input type="text" id="user-name" placeholder="Họ và tên thí sinh" style="margin-bottom:8px; width:100%; box-sizing:border-box;">
@@ -120,7 +128,7 @@
                 <div style="display: flex; flex-wrap: wrap; gap:20px;">
                     <div style="flex: 1; min-width: 320px; background:#f9f9f9; padding:15px; border-radius:10px; border: 1px solid #ddd;">
                         <h4>1. CẤU HÌNH & XUẤT QR</h4>
-                        <label>ID Phòng thi (Cố định để nhận kết quả):</label>
+                        <label>ID Phòng thi (Mỗi bộ đề 1 mã riêng):</label>
                         <input type="text" id="admin-room-id" readonly style="background:#eee; font-weight:bold; color:red">
                         <label>Thời gian (phút):</label>
                         <input type="number" id="set-time" value="15" style="width:100%">
@@ -150,7 +158,7 @@
 
             <div id="tab-results" class="hidden">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <h3 style="color:var(--army-red)">THỐNG KÊ KẾT QUẢ</h3>
+                    <h3 style="color:var(--army-red)">THỐNG KÊ KẾT QUẢ (PHÒNG: <span id="res-room-id">...</span>)</h3>
                     <div>
                         <button class="btn-red" onclick="exportResultsToExcel()" style="background:#27ae60; font-size:10px; margin-right:5px">XUẤT FILE EXCEL</button>
                         <button class="btn-red" onclick="clearResultsCloud()" style="background:#c0392b; font-size:10px">XOÁ DỮ LIỆU MÁY CHỦ</button>
@@ -230,18 +238,18 @@
     const USER_MAP = {"D1":"Tiểu đoàn 1", "D2":"Tiểu đoàn 2", "D3":"Tiểu đoàn 3", "D4":"Tiểu đoàn 4", "D5":"Tiểu đoàn 5", "D6":"Tiểu đoàn 6", "P1":"Phòng Đào tạo", "P2":"Phòng Tham mưu", "P3":"Phòng Chính trị", "P4":"Phòng Hậu cần", "K1":"Khoa KHXH", "K2":"Khoa BC hợp thành", "K3":"Khoa Binh chủng", "K4":"Khoa Chuyên môn", "ADMIN":"BỘ PHẬN QUẢN TRỊ"};
     
     let bank = JSON.parse(localStorage.getItem('army_bank_v_final')) || [];
+    let setRoomMap = JSON.parse(localStorage.getItem('army_set_room_map')) || {}; // Lưu mapping Bộ đề -> Mã phòng
     let currentActiveSet = "Chung";
     let examQuestions = [], currentQ = 0, answers = [], timeLeft = 0, timer, userData = {}, isReview = false, startTimestamp = 0;
-    
-    // LẤY ID PHÒNG TỪ LOCALSTORAGE ĐỂ KHÔNG BỊ MẤT KHI LOAD LẠI TRANG
-    let currentRoomID = localStorage.getItem('last_room_id') || "";
+    let currentRoomID = "";
 
     window.onload = function() {
         const params = new URLSearchParams(window.location.search);
         if(params.has('room')) {
             currentRoomID = params.get('room');
-            localStorage.setItem('last_room_id', currentRoomID); // Lưu lại ID từ link
+            document.getElementById('login-room-id-input').value = currentRoomID;
         }
+        
         if(params.has('d')) {
             try {
                 const decodedData = JSON.parse(decodeURIComponent(escape(atob(params.get('d')))));
@@ -253,6 +261,20 @@
         }
         renderAdmin();
     };
+
+    // --- LOGIC CHỐNG COPY (PHÍM TẮT) ---
+    document.addEventListener('keydown', function(e) {
+        // Khóa F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U (Xem code)
+        if (e.keyCode == 123 || 
+            (e.ctrlKey && e.shiftKey && (e.keyCode == 73 || e.keyCode == 74)) || 
+            (e.ctrlKey && e.keyCode == 85)) {
+            e.preventDefault();
+        }
+        // Khóa Ctrl+C, Ctrl+V, Ctrl+S
+        if (e.ctrlKey && (e.keyCode == 67 || e.keyCode == 86 || e.keyCode == 83)) {
+            e.preventDefault();
+        }
+    });
 
     function updateHint() {
         const id = document.getElementById('login-id').value.toUpperCase();
@@ -282,12 +304,13 @@
     }
 
     function renderAdmin() {
-        // NẾU CHƯA CÓ ID THÌ MỚI TẠO MỚI, NẾU CÓ TRONG LOCALSTORAGE THÌ DÙNG LẠI
-        if(!currentRoomID) {
-            currentRoomID = Math.floor(100000 + Math.random() * 900000).toString();
-            localStorage.setItem('last_room_id', currentRoomID);
+        if(!setRoomMap[currentActiveSet]) {
+            setRoomMap[currentActiveSet] = Math.floor(100000 + Math.random() * 900000).toString();
+            localStorage.setItem('army_set_room_map', JSON.stringify(setRoomMap));
         }
+        currentRoomID = setRoomMap[currentActiveSet];
         document.getElementById('admin-room-id').value = currentRoomID;
+        document.getElementById('res-room-id').innerText = currentRoomID;
 
         renderAdminSetMenu();
         document.getElementById('current-set-label').innerText = currentActiveSet;
@@ -298,9 +321,6 @@
             const realIdx = bank.indexOf(item);
             list.innerHTML += `<tr><td>${i+1}</td><td>${item.q}</td><td><button onclick="editQ(${realIdx})">Sửa</button> <button onclick="deleteQ(${realIdx})" style="color:red">Xóa</button></td></tr>`;
         });
-        
-        // LUÔN LUÔN LẮNG NGHE KẾT QUẢ TỪ FIREBASE KHI Ở TRANG ADMIN
-        startListeningResults();
     }
 
     function createExamQR() {
@@ -313,18 +333,17 @@
         const qrContainer = document.getElementById('qrcode');
         qrContainer.innerHTML = "";
         new QRCode(qrContainer, { text: url, width: 160, height: 160 });
-        alert("Đã tạo QR thành công cho phòng thi: " + currentRoomID);
+        startListeningResults();
+        alert(`Đã tạo QR cho Bộ đề: ${currentActiveSet}\nMã phòng: ${currentRoomID}`);
     }
 
     function startListeningResults() {
         if(!currentRoomID) return;
-        // Firebase lắng nghe sự thay đổi và cập nhật bảng liên tục
         db.ref('quiz_results/' + currentRoomID).on('value', (snapshot) => {
             const list = document.getElementById('admin-result-list');
             list.innerHTML = '';
             if(snapshot.exists()) {
                 const data = snapshot.val();
-                // Sắp xếp kết quả mới nhất lên đầu
                 Object.values(data).reverse().forEach(res => {
                     list.innerHTML += `<tr><td>${res.date}</td><td>${res.duration}</td><td>${res.name}</td><td>${res.unit}</td><td>${res.set}</td><td style="color:red; font-weight:bold">${res.score}</td><td>${res.classification}</td></tr>`;
                 });
@@ -333,15 +352,13 @@
     }
 
     function clearResultsCloud() {
-        if(confirm("Xoá toàn bộ dữ liệu trên máy chủ của phòng thi này?")) {
-            db.ref('quiz_results/' + currentRoomID).remove();
-        }
+        if(confirm(`Xoá toàn bộ dữ liệu trên máy chủ của phòng ${currentRoomID}?`)) db.ref('quiz_results/' + currentRoomID).remove();
     }
 
     function exportResultsToExcel() {
         const table = document.getElementById('table-results');
         const wb = XLSX.utils.table_to_book(table, {sheet: "KetQuaThi"});
-        XLSX.writeFile(wb, "KetQuaThi_TruongQuanSu_QD34.xlsx");
+        XLSX.writeFile(wb, `KetQuaThi_Phong_${currentRoomID}.xlsx`);
     }
 
     function handleLogin() {
@@ -354,13 +371,13 @@
                 renderAdmin(); return;
             } else return alert("Sai mật khẩu Admin!");
         }
+        currentRoomID = document.getElementById('login-room-id-input').value.trim();
         const name = document.getElementById('user-name').value;
         const rank = document.getElementById('user-rank').value;
         const extra = document.getElementById('user-unit-extra').value;
         if (!USER_MAP[id] || pw !== "123") return alert("Thông tin đăng nhập sai!");
         if (!name || !rank || !extra) return alert("Vui lòng nhập đủ thông tin thí sinh!");
         userData = { name, rank, unit: USER_MAP[id], extra, id };
-        
         const params = new URLSearchParams(window.location.search);
         const setReq = params.get('s') || "Chung";
         let filteredBank = bank.filter(q => (q.set || "Chung") === setReq);
@@ -370,10 +387,9 @@
         const qty = Math.min(qtyReq, filteredBank.length);
         examQuestions = [...filteredBank].sort(() => 0.5 - Math.random()).slice(0, qty);
         timeLeft = timeReq * 60;
-        
         document.getElementById('login-screen').classList.add('hidden');
         document.getElementById('welcome-screen').classList.remove('hidden');
-        document.getElementById('welcome-info').innerHTML = `<b>Thí sinh:</b> ${userData.rank} ${userData.name}<br><b>Đơn vị:</b> ${userData.unit} (${userData.extra})<br><b>Bộ đề thi:</b> ${setReq}<br><b>Số câu hỏi:</b> ${examQuestions.length} câu<br><b>Thời gian:</b> ${timeReq} phút`;
+        document.getElementById('welcome-info').innerHTML = `<b>Thí sinh:</b> ${userData.rank} ${userData.name}<br><b>Đơn vị:</b> ${userData.unit} (${userData.extra})<br><b>Mã phòng thi:</b> ${currentRoomID || "Tự do"}<br><b>Bộ đề thi:</b> ${setReq}<br><b>Số câu hỏi:</b> ${examQuestions.length} câu<br><b>Thời gian:</b> ${timeReq} phút`;
     }
 
     function startExam() {
@@ -414,24 +430,22 @@
         examQuestions.forEach((q, i) => { if(answers[i].sort().join(',') === q.correct.sort().join(',') && answers[i].length > 0) score++; });
         const final = (score/examQuestions.length)*10;
         const cls = final >= 8 ? "GIỎI" : final >= 6.5 ? "KHÁ" : final >= 5 ? "ĐẠT" : "KHÔNG ĐẠT";
-        
         if(currentRoomID) {
             const resultData = { date: new Date().toLocaleString('vi-VN'), duration, name: userData.name, unit: userData.unit, set: (new URLSearchParams(window.location.search).get('s') || "Chung"), score: final.toFixed(1), classification: cls };
             db.ref('quiz_results/' + currentRoomID).push(resultData);
         }
-        
         document.getElementById('quiz-area').classList.add('hidden');
         document.getElementById('result-area').classList.remove('hidden');
         document.getElementById('res-grade').innerText = cls;
         document.getElementById('res-grade').style.color = final >= 5 ? "var(--success)" : "var(--danger)";
-        document.getElementById('res-summary').innerHTML = `<b>Họ tên:</b> ${userData.name}<br><b>Điểm:</b> <span style="color:red; font-weight:bold">${final.toFixed(1)}</span><br><b>Thời gian:</b> ${duration}`;
+        document.getElementById('res-summary').innerHTML = `<b>Họ tên:</b> ${userData.name}<br><b>Điểm:</b> <span style="color:red; font-weight:bold">${final.toFixed(1)}</span><br><b>Thời gian:</b> ${duration}<br><b>Mã phòng:</b> ${currentRoomID || "Tự do"}`;
     }
 
     function showTab(t) { 
         document.getElementById('tab-questions').classList.toggle('hidden', t!=='questions'); 
         document.getElementById('tab-results').classList.toggle('hidden', t!=='results'); 
+        if(t==='results') startListeningResults(); 
     }
-    
     function saveQuestion() {
         const q = document.getElementById('admin-q').value;
         const opts = [document.getElementById('admin-a').value, document.getElementById('admin-b').value, document.getElementById('admin-c').value, document.getElementById('admin-d').value];
@@ -443,7 +457,6 @@
         localStorage.setItem('army_bank_v_final', JSON.stringify(bank));
         clearAdminForm(); renderAdmin();
     }
-    
     function clearAdminForm() { document.getElementById('admin-q').value = ''; ['a','b','c','d'].forEach(l => document.getElementById('admin-'+l).value = ''); document.querySelectorAll('.correct-check').forEach(cb => cb.checked = false); document.getElementById('edit-index').value = "-1"; }
     function deleteQ(i) { if(confirm("Xóa?")) { bank.splice(i, 1); localStorage.setItem('army_bank_v_final', JSON.stringify(bank)); renderAdmin(); } }
     function editQ(i) {
