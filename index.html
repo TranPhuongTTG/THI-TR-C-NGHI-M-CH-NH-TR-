@@ -14,76 +14,53 @@
             --white: #ffffff; --bg: #f0f2f5; --success: #27ae60; --danger: #c0392b;
             --army-red: #d41818; --army-yellow: #ffeb3b;
         }
-        /* Cập nhật để tương thích mobile: cho phép cuộn trang */
         body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); margin: 0; overflow-x: hidden; height: 100vh; display: flex; flex-direction: column; }
         .hidden { display: none !important; }
 
         .overlay { position: fixed; inset: 0; background: radial-gradient(circle, var(--blue-main), var(--navy)); display: flex; align-items: center; justify-content: center; z-index: 1000; flex-direction: column; padding: 10px; overflow-y: auto; }
-        .card { background: var(--white); padding: 30px; border-radius: 15px; width: 100%; max-width: 480px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center; box-sizing: border-box; }
-        .logo-container { display: flex; justify-content: center; margin-bottom: 15px; }
-        .logo-container img { max-width: 80px; height: auto; border: 2px solid var(--army-red); border-radius: 50%; padding: 5px; background: #fff; }
+        .card { background: var(--white); padding: 25px; border-radius: 15px; width: 100%; max-width: 480px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center; box-sizing: border-box; }
+        .logo-container { display: flex; justify-content: center; margin-bottom: 10px; }
+        .logo-container img { max-width: 80px; border: 2px solid var(--army-red); border-radius: 50%; padding: 5px; background: #fff; }
 
         .software-title {
             color: var(--army-red); font-size: 1.3rem; font-weight: 900; margin-bottom: 15px; text-transform: uppercase;
             text-shadow: -1px -1px 0 var(--army-yellow), 1px -1px 0 var(--army-yellow), -1px 1px 0 var(--army-yellow), 1px 1px 0 var(--army-yellow);
-            letter-spacing: 1px;
         }
 
         .input-group { display: flex; align-items: center; gap: 10px; margin: 8px 0; }
-        input, select, textarea { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; outline: none; box-sizing: border-box; }
+        input, select, textarea { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; outline: none; }
         .hint-text { font-size: 0.75rem; color: #d41818; font-weight: bold; width: 120px; text-align: left; }
-        label { display: block; text-align: left; font-weight: bold; font-size: 0.85rem; color: #444; margin-top: 5px; }
+        label { display: block; text-align: left; font-weight: bold; font-size: 0.8rem; color: #444; margin-top: 5px; }
 
         header { background: var(--army-red); color: var(--army-yellow); padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid var(--army-yellow); flex-shrink: 0; }
         .timer-badge { background: var(--navy); color: white; padding: 5px 15px; border-radius: 30px; font-weight: bold; font-size: 1.1rem; }
         
         main { display: flex; flex: 1; padding: 15px; gap: 15px; overflow: hidden; }
-        .sidebar { width: 260px; background: white; border-radius: 12px; padding: 15px; display: flex; flex-direction: column; box-shadow: 0 4px 10px rgba(0,0,0,0.1); flex-shrink: 0; }
+        .sidebar { width: 260px; background: white; border-radius: 12px; padding: 15px; display: flex; flex-direction: column; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         .quiz-container { flex: 1; background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); overflow-y: auto; }
 
-        .quiz-layout { max-width: 900px; margin: 0 auto; text-align: center; }
-        .question-box { margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px dashed #eee; }
-        .options-area { max-width: 700px; margin: 0 auto; }
-        .opt { padding: 12px 15px; border: 2px solid #eee; border-radius: 10px; margin-bottom: 10px; cursor: pointer; display: flex; align-items: center; transition: 0.2s; background: #fafafa; text-align: left; font-size: 0.95rem; }
-        .opt:hover { border-color: var(--army-red); background: #fff; }
+        .opt { padding: 12px 15px; border: 2px solid #eee; border-radius: 10px; margin-bottom: 10px; cursor: pointer; display: flex; align-items: center; background: #fafafa; text-align: left; }
         .opt.selected { background: #fff0f0; border-color: var(--army-red); font-weight: bold; }
-        
-        .opt.correct-review { border-color: var(--success) !important; background: #eafff0 !important; color: var(--success); }
-        .opt.wrong-review { border-color: var(--danger) !important; background: #fff0f0 !important; color: var(--danger); }
+        .opt.correct-review { border-color: var(--success) !important; background: #eafff0 !important; }
+        .opt.wrong-review { border-color: var(--danger) !important; background: #fff0f0 !important; }
 
-        .q-num { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; border: 1px solid #ccc; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 0.9rem; }
+        .q-num { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; border: 1px solid #ccc; border-radius: 8px; cursor: pointer; font-weight: bold; }
         .q-num.active { background: var(--navy); color: white; }
         .q-num.done { background: var(--success); color: white; }
         
-        .btn-red { background: var(--army-red); color: var(--army-yellow); padding: 12px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; text-transform: uppercase; font-size: 0.9rem; }
+        .btn-red { background: var(--army-red); color: var(--army-yellow); padding: 10px 15px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; text-transform: uppercase; font-size: 0.85rem; }
 
-        .admin-panel { background: white; width: 98%; max-width: 1200px; border-radius: 15px; padding: 20px; max-height: 95vh; overflow-y: auto; color: #333; box-sizing: border-box; }
-        .q-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        .q-table th, .q-table td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 12px; }
+        .admin-panel { background: white; width: 98%; max-width: 1300px; border-radius: 15px; padding: 20px; max-height: 95vh; overflow-y: auto; color: #333; }
+        .q-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 12px; }
+        .q-table th, .q-table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
         .q-table th { background: var(--army-red); color: var(--army-yellow); position: sticky; top: 0; }
 
-        footer { background: var(--army-red); color: var(--army-yellow); padding: 8px; text-align: center; font-size: 0.8rem; border-top: 2px solid var(--army-yellow); font-weight: bold; width: 100%; }
-        .login-footer { margin-top: 20px; border-radius: 0 0 15px 15px; padding: 15px; }
+        footer { background: var(--army-red); color: var(--army-yellow); padding: 8px; text-align: center; font-size: 0.8rem; border-top: 2px solid var(--army-yellow); font-weight: bold; }
         
-        .admin-tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid var(--army-red); padding-bottom: 10px; flex-wrap: wrap; }
-        .tab-link { padding: 8px 15px; background: #eee; cursor: pointer; border-radius: 5px; font-weight: bold; font-size: 0.85rem; }
-        .tab-link.active { background: var(--army-red); color: var(--army-yellow); }
-
-        /* CSS TƯƠNG THÍCH ĐIỆN THOẠI */
         @media (max-width: 768px) {
-            body { height: auto; overflow: auto; }
-            main { flex-direction: column; overflow: visible; padding: 10px; height: auto; }
+            main { flex-direction: column; overflow: visible; }
             .sidebar { width: 100%; order: 2; }
-            .quiz-container { width: 100%; order: 1; min-height: 400px; overflow: visible; padding: 15px; }
-            header { padding: 10px; }
-            header i { display: none; }
-            .timer-badge { font-size: 1rem; }
-            .q-num { height: 40px; }
-            #nav-btns { gap: 10px !important; }
-            #nav-btns button { flex: 1; font-size: 0.8rem; padding: 10px 5px; }
-            #q-text { font-size: 1.3rem !important; }
-            .admin-panel { width: 100%; padding: 10px; }
-            .q-table { display: block; overflow-x: auto; }
+            .quiz-container { width: 100%; order: 1; }
         }
     </style>
 </head>
@@ -91,9 +68,8 @@
 
     <div id="login-screen" class="overlay">
         <div class="card" style="padding-bottom: 0; overflow: hidden;">
-            <div style="padding: 25px;">
+            <div style="padding: 20px;">
                 <div class="logo-container"><img src="logo.png" alt="Logo"></div>
-                <h2 style="color: var(--army-red); margin: 0; font-size: 1.4rem;">ĐĂNG NHẬP HỆ THỐNG</h2>
                 <div class="software-title">PHẦN MỀM THI TRẮC NGHIỆM</div>
                 
                 <label>Mã đơn vị:</label>
@@ -104,30 +80,30 @@
                 <label>Mật khẩu:</label>
                 <input type="password" id="login-pw" placeholder="Mật khẩu">
                 
-                <!-- Khu vực thông tin thí sinh (Sẽ ẩn nếu là ADMIN) -->
                 <div id="user-info-fields">
-                    <hr style="margin: 15px 0; border: 0; border-top: 1px dashed #ccc;">
-                    <label>Họ và tên thí sinh:</label>
-                    <input type="text" id="user-name" placeholder="Họ và tên">
-                    <label>Cấp bậc / Chức vụ:</label>
-                    <input type="text" id="user-rank" placeholder="VD: Trung úy - Trung đội trưởng">
-                    <label>Đơn vị cụ thể:</label>
-                    <input type="text" id="user-unit-extra" placeholder="VD: Đại đội 1 - Tiểu đoàn 4">
+                    <hr style="margin: 10px 0; border: 0; border-top: 1px dashed #ccc;">
+                    <input type="text" id="user-name" placeholder="Họ và tên thí sinh" style="margin-bottom:8px; width:100%; box-sizing:border-box;">
+                    <input type="text" id="user-rank" placeholder="Cấp bậc / Chức vụ" style="margin-bottom:8px; width:100%; box-sizing:border-box;">
+                    <input type="text" id="user-unit-extra" placeholder="Đơn vị cụ thể (VD: C1-D4)" style="width:100%; box-sizing:border-box;">
+                    
+                    <div style="margin-top:10px; border: 1px solid #eee; padding: 8px; border-radius: 5px; background: #fff9f9;">
+                        <label style="margin:0; font-size: 0.7rem;">Đồng bộ câu hỏi (Nếu quét mã không có đề):</label>
+                        <textarea id="import-data" placeholder="Dán mã đồng bộ từ Admin vào đây..." rows="1" style="width:100%; font-size: 10px; margin-top:5px;"></textarea>
+                        <button class="btn-red" style="font-size: 10px; padding: 3px 10px; margin-top: 5px; background: #27ae60;" onclick="importBank()">CẬP NHẬT ĐỀ</button>
+                    </div>
                 </div>
                 
-                <button class="btn-red" style="width:100%; margin-top:15px;" onclick="handleLogin()">ĐĂNG NHẬP</button>
+                <button class="btn-red" style="width:100%; margin-top:15px; padding: 15px;" onclick="handleLogin()">ĐĂNG NHẬP</button>
             </div>
-            <footer class="login-footer">
-                Sản phẩm của: Thượng tá Hồ Quang Lợi - Trường Quân sự Quân đoàn 34
-            </footer>
+            <footer style="margin-top:15px;">Sản phẩm của: Thượng tá Hồ Quang Lợi - Trường Quân sự Quân đoàn 34</footer>
         </div>
     </div>
 
     <div id="welcome-screen" class="overlay hidden">
-        <div class="card" style="max-width: 600px; border-top: 8px solid var(--army-red);">
-            <h2 style="color: var(--army-red); font-size: 1.3rem;">XÁC NHẬN THÔNG TIN</h2>
-            <div id="welcome-info" style="margin: 15px 0; text-align: left; background: #f9f9f9; padding: 20px; border-radius: 8px; font-size: 1rem; line-height: 1.5;"></div>
-            <button class="btn-red" style="padding: 15px; width:100%; font-size: 1.1rem;" onclick="startExam()">BẮT ĐẦU LÀM BÀI</button>
+        <div class="card" style="max-width: 550px;">
+            <h2 style="color: var(--army-red);">THÔNG TIN BÀI THI</h2>
+            <div id="welcome-info" style="text-align: left; background: #f9f9f9; padding: 20px; border-radius: 8px; font-size: 0.95rem; line-height: 1.6;"></div>
+            <button class="btn-red" style="padding: 15px; width:100%; margin-top:15px;" onclick="startExam()">BẮT ĐẦU</button>
         </div>
     </div>
 
@@ -136,33 +112,46 @@
             <div class="admin-tabs">
                 <div class="tab-link active" onclick="showTab('questions')">QUẢN LÝ CÂU HỎI</div>
                 <div class="tab-link" onclick="showTab('results')">KẾT QUẢ THI</div>
-                <button class="btn-red" onclick="location.reload()" style="margin-left:auto; background:#666; font-size: 0.7rem;">ĐĂNG XUẤT</button>
+                <button class="btn-red" onclick="location.reload()" style="margin-left:auto; background:#666;">ĐĂNG XUẤT</button>
             </div>
 
             <div id="tab-questions">
                 <div style="display: flex; flex-wrap: wrap; gap:20px;">
-                    <div style="flex: 1; min-width: 300px; background:#f9f9f9; padding:15px; border-radius:10px; border: 1px solid #ddd;">
-                        <h4 style="margin:0 0 10px 0">CẤU HÌNH ĐỀ THI</h4>
+                    <div style="flex: 1; min-width: 320px; background:#f9f9f9; padding:15px; border-radius:10px; border: 1px solid #ddd;">
+                        <h4>1. CẤU HÌNH BỘ ĐỀ & QR</h4>
+                        <label>Chọn Bộ đề muốn thi:</label>
+                        <select id="select-set" style="width:100%; margin-bottom:10px;"></select>
+                        
                         <label>Thời gian (phút):</label>
                         <input type="number" id="set-time" value="15" style="width:100%">
-                        <label>Số câu hỏi mỗi đề:</label>
+                        <label>Số câu hỏi:</label>
                         <input type="number" id="set-qty" value="20" style="width:100%">
-                        <button class="btn-red" style="width:100%; margin-top:10px; background: #27ae60;" onclick="createExamQR()">TẠO ĐỀ & XUẤT MÃ QR</button>
+                        
+                        <button class="btn-red" style="width:100%; margin-top:10px; background: #27ae60;" onclick="createExamQR()">TẠO MÃ QR ĐỀ THI</button>
                         <div id="qrcode" style="margin-top: 10px; display: flex; justify-content: center;"></div>
-                        <p id="qr-link" style="font-size: 9px; word-break: break-all; color: #666; margin: 5px 0;"></p>
+                        
                         <hr>
-                        <h4 style="margin:10px 0">THÊM CÂU HỎI</h4>
+                        <h4>2. ĐỒNG BỘ DỮ LIỆU</h4>
+                        <p style="font-size: 11px; color: #666;">Nhấn nút dưới để lấy mã gửi cho thí sinh (Nếu máy thí sinh chưa có đề):</p>
+                        <button class="btn-red" style="width:100%; background: #2980b9;" onclick="exportBank()">SAO CHÉP MÃ ĐỒNG BỘ</button>
+                        
+                        <hr>
+                        <h4>3. THÊM CÂU HỎI MỚI</h4>
                         <input type="hidden" id="edit-index" value="-1">
-                        <textarea id="admin-q" placeholder="Nội dung câu hỏi..." rows="3" style="width:100%"></textarea>
+                        <label>Tên Bộ đề (Phân loại):</label>
+                        <input type="text" id="admin-set" placeholder="VD: BoDe1, ChinhTri..." list="set-suggestions">
+                        <datalist id="set-suggestions"></datalist>
+                        
+                        <textarea id="admin-q" placeholder="Nội dung câu hỏi..." rows="3" style="width:100%; margin-top:5px;"></textarea>
                         <div class="input-group"><input type="text" id="admin-a" placeholder="Đáp án A"> <input type="checkbox" class="correct-check" value="0"></div>
                         <div class="input-group"><input type="text" id="admin-b" placeholder="Đáp án B"> <input type="checkbox" class="correct-check" value="1"></div>
                         <div class="input-group"><input type="text" id="admin-c" placeholder="Đáp án C"> <input type="checkbox" class="correct-check" value="2"></div>
                         <div class="input-group"><input type="text" id="admin-d" placeholder="Đáp án D"> <input type="checkbox" class="correct-check" value="3"></div>
                         <button class="btn-red" style="width:100%; margin-top:10px;" onclick="saveQuestion()">LƯU CÂU HỎI</button>
                     </div>
-                    <div style="flex: 2; min-width: 300px; overflow-y:auto; max-height: 70vh;">
+                    <div style="flex: 2; min-width: 320px; overflow-y:auto; max-height: 80vh;">
                         <table class="q-table">
-                            <thead><tr><th>STT</th><th>Nội dung</th><th>Thao tác</th></tr></thead>
+                            <thead><tr><th>STT</th><th>Bộ đề</th><th>Nội dung</th><th>Thao tác</th></tr></thead>
                             <tbody id="admin-list"></tbody>
                         </table>
                     </div>
@@ -170,19 +159,17 @@
             </div>
 
             <div id="tab-results" class="hidden">
-                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-                    <h3 style="margin:0">THỐNG KÊ THỜI GIAN THỰC</h3>
-                    <button class="btn-red" onclick="exportResults()">TẢI DỮ LIỆU</button>
-                </div>
-                <div style="overflow-x:auto; margin-top:15px;">
+                <h3>DANH SÁCH THÍ SINH ĐÃ THI</h3>
+                <div style="overflow-x:auto;">
                     <table class="q-table">
                         <thead>
                             <tr>
-                                <th>Thời gian nộp</th>
+                                <th>Thời gian</th>
                                 <th>Thời gian làm</th>
-                                <th>Họ và Tên</th>
+                                <th>Họ tên</th>
                                 <th>Cấp bậc</th>
                                 <th>Đơn vị</th>
+                                <th>Bộ đề</th>
                                 <th>Điểm</th>
                                 <th>Xếp loại</th>
                             </tr>
@@ -196,36 +183,34 @@
 
     <div id="exam-ui" class="hidden" style="display:flex; flex-direction:column; height:100vh;">
         <header>
-            <div style="display:flex; align-items:center; gap:10px;"><i class="fas fa-star fa-lg"></i>
+            <div style="display:flex; align-items:center; gap:10px;"><i class="fas fa-star"></i>
                 <div><div id="disp-name" style="font-weight:bold; font-size: 0.9rem;">---</div><div id="disp-unit" style="font-size:0.7rem;">---</div></div>
             </div>
             <div class="timer-badge" id="timer">00:00</div>
         </header>
         <main>
             <div class="sidebar">
-                <h4 style="margin: 0 0 10px 0; border-bottom:1px solid #eee; padding-bottom:5px; font-size: 0.9rem;">TIẾN ĐỘ</h4>
+                <h4 style="margin: 0 0 10px 0; border-bottom:1px solid #eee; padding-bottom:5px;">TIẾN ĐỘ</h4>
                 <div id="q-nav" style="display:grid; grid-template-columns: repeat(5, 1fr); gap:5px;"></div>
                 <button id="final-submit-btn" class="btn-red" style="margin-top:20px" onclick="submitExam()">NỘP BÀI</button>
                 <button id="exit-btn" class="btn-red hidden" style="margin-top:20px; background:#666;" onclick="location.reload()">THOÁT</button>
             </div>
             <div class="quiz-container" id="capture-area">
                 <div id="quiz-area" class="quiz-layout">
-                    <div class="question-box">
-                        <div id="q-text" style="font-size: 1.5rem; font-weight: bold; color: var(--navy); line-height: 1.3;"></div>
-                    </div>
-                    <div id="options-area" class="options-area"></div>
-                    <div id="nav-btns" style="margin-top:20px; display:flex; justify-content:center; gap: 20px;">
+                    <div id="q-text" style="font-size: 1.4rem; font-weight: bold; color: var(--navy); margin-bottom:20px; line-height: 1.3;"></div>
+                    <div id="options-area"></div>
+                    <div id="nav-btns" style="margin-top:20px; display:flex; justify-content:center; gap: 15px;">
                         <button class="btn-red" style="background:#666" onclick="changeQ(-1)">QUAY LẠI</button>
                         <button class="btn-red" onclick="changeQ(1)">TIẾP THEO</button>
                     </div>
                 </div>
                 <div id="result-area" class="hidden" style="text-align: center;">
                     <h2 style="color:var(--army-red)">KẾT QUẢ BÀI THI</h2>
-                    <h1 id="res-grade" style="font-size: 3rem; margin:5px 0;"></h1>
-                    <div id="res-summary" style="background: #f8f9fa; padding: 20px; text-align: left; margin: 15px auto; border: 1px solid #ddd; max-width: 400px; border-radius: 10px; font-size: 1rem;"></div>
-                    <div class="no-capture" style="display:flex; justify-content:center; gap:10px; flex-wrap: wrap;">
+                    <h1 id="res-grade" style="font-size: 3.5rem; margin:10px 0;"></h1>
+                    <div id="res-summary" style="background: #f8f9fa; padding: 20px; text-align: left; margin: 15px auto; border: 1px solid #ddd; border-radius: 10px;"></div>
+                    <div class="no-capture" style="display:flex; justify-content:center; gap:10px;">
                         <button class="btn-red" onclick="startReview()">XEM LẠI</button>
-                        <button class="btn-red" style="background:#666" onclick="location.reload()">KẾT THÚC</button>
+                        <button class="btn-red" style="background:#666" onclick="location.reload()">THOÁT</button>
                     </div>
                 </div>
             </div>
@@ -237,103 +222,133 @@
     const USER_MAP = {"D1":"Tiểu đoàn 1", "D2":"Tiểu đoàn 2", "D3":"Tiểu đoàn 3", "D4":"Tiểu đoàn 4", "D5":"Tiểu đoàn 5", "D6":"Tiểu đoàn 6", "P1":"Phòng Đào tạo", "P2":"Phòng Tham mưu hành chính", "P3":"Phòng Chính trị", "P4":"Phòng Hậu cần kỹ thuật", "K1":"Khoa KHXH & NV", "K2":"Khoa Binh chủng hợp thành", "K3":"Khoa Binh chủng", "K4":"Khoa Chuyên môn kỹ thuật", "ADMIN":"BỘ PHẬN QUẢN TRỊ"};
     
     let bank = JSON.parse(localStorage.getItem('army_bank_v_final')) || [];
-    let savedConfig = JSON.parse(localStorage.getItem('army_config')) || { time: 15, qty: 20 };
+    let savedConfig = JSON.parse(localStorage.getItem('army_config')) || { time: 15, qty: 20, set: "" };
     let globalResults = JSON.parse(localStorage.getItem('army_results_all')) || [];
 
     let examQuestions = [], currentQ = 0, answers = [], timeLeft = 0, timer, userData = {}, isReview = false, startTimestamp = 0;
 
-    // TỰ ĐỘNG NHẬN CẤU HÌNH TỪ URL (QUÉT MÃ QR)
+    // Tự động nhận tham số từ QR
     window.onload = function() {
         const params = new URLSearchParams(window.location.search);
         if(params.has('t')) savedConfig.time = parseInt(params.get('t'));
         if(params.has('q')) savedConfig.qty = parseInt(params.get('q'));
+        if(params.has('s')) savedConfig.set = params.get('s');
+        updateSetList();
+        renderAdmin();
     };
 
     function updateHint() {
         const id = document.getElementById('login-id').value.toUpperCase();
         document.getElementById('unit-hint').innerText = USER_MAP[id] ? `( ${USER_MAP[id]} )` : "(Chưa xác định)";
-        // KHẮC PHỤC: Nếu là ADMIN thì ẩn các trường nhập thông tin
         document.getElementById('user-info-fields').classList.toggle('hidden', id === "ADMIN");
     }
 
+    function updateSetList() {
+        const sets = [...new Set(bank.map(q => q.set || "Chung"))];
+        const select = document.getElementById('select-set');
+        const datalist = document.getElementById('set-suggestions');
+        select.innerHTML = '<option value="">-- Tất cả bộ đề --</option>';
+        datalist.innerHTML = '';
+        sets.forEach(s => {
+            select.innerHTML += `<option value="${s}" ${savedConfig.set === s ? 'selected' : ''}>${s}</option>`;
+            datalist.innerHTML += `<option value="${s}">`;
+        });
+    }
+
+    function exportBank() {
+        if(bank.length === 0) return alert("Ngân hàng câu hỏi trống!");
+        const dataStr = btoa(unescape(encodeURIComponent(JSON.stringify(bank))));
+        navigator.clipboard.writeText(dataStr).then(() => alert("Đã sao chép mã đồng bộ! Hãy gửi mã này cho thí sinh dán vào ô 'Đồng bộ câu hỏi'."));
+    }
+
+    function importBank() {
+        const str = document.getElementById('import-data').value.trim();
+        if(!str) return alert("Hãy dán mã đồng bộ vào ô!");
+        try {
+            const decoded = JSON.parse(decodeURIComponent(escape(atob(str))));
+            bank = decoded;
+            localStorage.setItem('army_bank_v_final', JSON.stringify(bank));
+            updateSetList();
+            alert("Đã cập nhật " + bank.length + " câu hỏi vào máy thí sinh!");
+        } catch(e) { alert("Mã đồng bộ không hợp lệ!"); }
+    }
+
     function createExamQR() {
-        savedConfig.time = parseInt(document.getElementById('set-time').value);
-        savedConfig.qty = parseInt(document.getElementById('set-qty').value);
+        savedConfig.time = document.getElementById('set-time').value;
+        savedConfig.qty = document.getElementById('set-qty').value;
+        savedConfig.set = document.getElementById('select-set').value;
         localStorage.setItem('army_config', JSON.stringify(savedConfig));
         
-        const baseUrl = window.location.origin + window.location.pathname;
-        const fullUrl = `${baseUrl}?t=${savedConfig.time}&q=${savedConfig.qty}`; // Nhúng mã đề
-
+        const url = `${window.location.origin}${window.location.pathname}?t=${savedConfig.time}&q=${savedConfig.qty}&s=${encodeURIComponent(savedConfig.set)}`;
         const qrContainer = document.getElementById('qrcode');
         qrContainer.innerHTML = "";
-        new QRCode(qrContainer, { text: fullUrl, width: 140, height: 140 });
-        document.getElementById('qr-link').innerText = "Link đề: " + fullUrl;
-        alert("Đã tạo mã QR thành công! Thí sinh quét mã sẽ nhận đúng cấu hình đề này.");
+        new QRCode(qrContainer, { text: url, width: 150, height: 150 });
+        alert("Đã tạo QR cho bộ đề: " + (savedConfig.set || "Tất cả"));
     }
 
     function handleLogin() {
         const id = document.getElementById('login-id').value.toUpperCase();
         const pw = document.getElementById('login-pw').value;
-        
         if (id === "ADMIN") {
             if(pw === "HQL123") {
                 document.getElementById('login-screen').classList.add('hidden');
                 document.getElementById('admin-screen').classList.remove('hidden');
-                renderAdmin(); return;
-            } else { return alert("Sai mật khẩu Admin!"); }
+                updateSetList(); renderAdmin(); return;
+            } else return alert("Sai mật khẩu Admin!");
         }
 
         const name = document.getElementById('user-name').value;
         const rank = document.getElementById('user-rank').value;
-        const unitExtra = document.getElementById('user-unit-extra').value;
+        const extra = document.getElementById('user-unit-extra').value;
 
-        if (!USER_MAP[id] || pw !== "123") return alert("Sai thông tin đăng nhập!");
-        if (!name || !rank || !unitExtra) return alert("Vui lòng nhập đủ thông tin!");
+        if (!USER_MAP[id] || pw !== "123") return alert("Thông tin đăng nhập sai!");
+        if (!name || !rank || !extra) return alert("Vui lòng nhập đủ thông tin thí sinh!");
 
-        let unitGroup = id.startsWith('D') ? "Khối Tiểu đoàn" : id.startsWith('P') ? "Khối Phòng" : "Khối Khoa";
-        userData = { name, rank, unitId: id, unitName: USER_MAP[id], unitExtra, unitGroup };
+        userData = { name, rank, unit: USER_MAP[id], extra, id };
         
-        // Trộn đề
-        const qty = Math.min(savedConfig.qty, bank.length); 
-        examQuestions = [...bank].sort(() => 0.5 - Math.random()).slice(0, qty);
+        // Lọc câu hỏi theo bộ đề
+        let filteredBank = bank;
+        if(savedConfig.set) {
+            filteredBank = bank.filter(q => q.set === savedConfig.set);
+        }
+
+        if(filteredBank.length === 0) return alert("Không tìm thấy câu hỏi trong bộ đề này! Hãy dán mã đồng bộ từ Admin.");
+
+        const qty = Math.min(savedConfig.qty, filteredBank.length);
+        examQuestions = [...filteredBank].sort(() => 0.5 - Math.random()).slice(0, qty);
         timeLeft = savedConfig.time * 60;
         
         document.getElementById('login-screen').classList.add('hidden');
         document.getElementById('welcome-screen').classList.remove('hidden');
         document.getElementById('welcome-info').innerHTML = `
-            <b>Đồng chí:</b> ${userData.rank} ${userData.name}<br>
-            <b>Đơn vị:</b> ${userData.unitName}<br>
+            <b>Thí sinh:</b> ${userData.rank} ${userData.name}<br>
+            <b>Đơn vị:</b> ${userData.unit} (${userData.extra})<br>
+            <b>Bộ đề:</b> ${savedConfig.set || "Tổng hợp"}<br>
             <b>Số câu hỏi:</b> ${examQuestions.length} câu<br>
             <b>Thời gian:</b> ${savedConfig.time} phút
         `;
     }
 
-    function renderAdmin() {
-        const list = document.getElementById('admin-list'); list.innerHTML = '';
-        bank.forEach((item, i) => {
-            list.innerHTML += `<tr><td>${i+1}</td><td>${item.q}</td><td><button onclick="editQ(${i})">Sửa</button> <button onclick="deleteQ(${i})" style="color:red">Xóa</button></td></tr>`;
-        });
-        localStorage.setItem('army_bank_v_final', JSON.stringify(bank));
-        document.getElementById('set-time').value = savedConfig.time;
-        document.getElementById('set-qty').value = savedConfig.qty;
-    }
-
-    function renderResultsAdmin() {
-        const list = document.getElementById('admin-result-list');
-        list.innerHTML = '';
-        [...globalResults].reverse().forEach(res => {
-            list.innerHTML += `<tr><td>${res.date}</td><td style="color:blue">${res.duration}</td><td><b>${res.name}</b></td><td>${res.rank}</td><td>${res.unitName}</td><td style="color:red; font-weight:bold">${res.score}</td><td>${res.classification}</td></tr>`;
-        });
-    }
-
     function saveQuestion() {
         const q = document.getElementById('admin-q').value;
+        const s = document.getElementById('admin-set').value || "Chung";
         const opts = [document.getElementById('admin-a').value, document.getElementById('admin-b').value, document.getElementById('admin-c').value, document.getElementById('admin-d').value];
         const correct = Array.from(document.querySelectorAll('.correct-check:checked')).map(cb => parseInt(cb.value));
         const editIdx = parseInt(document.getElementById('edit-index').value);
-        if(!q || opts.some(o => !o) || correct.length === 0) return alert("Nhập đủ nội dung!");
-        if(editIdx === -1) bank.push({q, opts, correct}); else bank[editIdx] = {q, opts, correct};
-        renderAdmin(); clearAdminForm();
+
+        if(!q || opts.some(o => !o) || correct.length === 0) return alert("Nhập đủ thông tin!");
+        const item = {q, opts, correct, set: s};
+        if(editIdx === -1) bank.push(item); else bank[editIdx] = item;
+        
+        localStorage.setItem('army_bank_v_final', JSON.stringify(bank));
+        renderAdmin(); clearAdminForm(); updateSetList();
+    }
+
+    function renderAdmin() {
+        const list = document.getElementById('admin-list'); list.innerHTML = '';
+        bank.forEach((item, i) => {
+            list.innerHTML += `<tr><td>${i+1}</td><td>${item.set || 'Chung'}</td><td>${item.q}</td><td><button onclick="editQ(${i})">Sửa</button> <button onclick="deleteQ(${i})" style="color:red">Xóa</button></td></tr>`;
+        });
     }
 
     function clearAdminForm() {
@@ -343,9 +358,10 @@
         document.getElementById('edit-index').value = "-1";
     }
 
-    function deleteQ(i) { if(confirm("Xóa?")) { bank.splice(i, 1); renderAdmin(); } }
+    function deleteQ(i) { if(confirm("Xóa câu hỏi?")) { bank.splice(i, 1); renderAdmin(); updateSetList(); } }
     function editQ(i) {
         const item = bank[i]; document.getElementById('admin-q').value = item.q;
+        document.getElementById('admin-set').value = item.set || "";
         item.opts.forEach((o, idx) => document.getElementById('admin-'+['a','b','c','d'][idx]).value = o);
         document.querySelectorAll('.correct-check').forEach(cb => cb.checked = item.correct.includes(parseInt(cb.value)));
         document.getElementById('edit-index').value = i;
@@ -355,7 +371,7 @@
         document.getElementById('welcome-screen').classList.add('hidden');
         document.getElementById('exam-ui').classList.remove('hidden');
         document.getElementById('disp-name').innerText = userData.name;
-        document.getElementById('disp-unit').innerText = userData.unitName;
+        document.getElementById('disp-unit').innerText = userData.unit;
         startTimestamp = Date.now();
         answers = examQuestions.map(() => []); initNav(); loadQ(0);
         timer = setInterval(() => {
@@ -396,7 +412,7 @@
     function changeQ(s) { let n = currentQ + s; if(n>=0 && n<examQuestions.length) loadQ(n); }
 
     function submitExam() {
-        if(!isReview && !confirm("Nộp bài?")) return; clearInterval(timer);
+        if(!isReview && !confirm("Đồng chí chắc chắn nộp bài?")) return; clearInterval(timer);
         let timeUsed = Math.floor((Date.now() - startTimestamp) / 1000);
         let duration = `${Math.floor(timeUsed/60)}p ${timeUsed%60}s`;
         
@@ -410,9 +426,9 @@
 
         document.getElementById('res-grade').innerText = final >= 5 ? "ĐẠT" : "KHÔNG ĐẠT";
         document.getElementById('res-grade').style.color = final >= 5 ? "var(--success)" : "var(--danger)";
-        document.getElementById('res-summary').innerHTML = `Họ tên: ${userData.name}<br>Điểm: <span style="color:red; font-weight:bold">${final.toFixed(1)}</span><br>Thời gian làm: ${duration}`;
+        document.getElementById('res-summary').innerHTML = `<b>Họ tên:</b> ${userData.name}<br><b>Điểm số:</b> <span style="color:red; font-weight:bold">${final.toFixed(1)}</span><br><b>Bộ đề:</b> ${savedConfig.set || "Tổng hợp"}<br><b>Thời gian làm:</b> ${duration}`;
 
-        globalResults.push({ date: new Date().toLocaleString('vi-VN'), duration, name: userData.name, rank: userData.rank, unitName: userData.unitName, score: final.toFixed(1), classification: cls });
+        globalResults.push({ date: new Date().toLocaleString('vi-VN'), duration, name: userData.name, rank: userData.rank, unit: userData.unit, set: (savedConfig.set || "Chung"), score: final.toFixed(1), classification: cls });
         localStorage.setItem('army_results_all', JSON.stringify(globalResults));
 
         setTimeout(() => {
@@ -425,7 +441,14 @@
 
     function startReview() { isReview = true; document.getElementById('quiz-area').classList.remove('hidden'); document.getElementById('result-area').classList.add('hidden'); document.getElementById('final-submit-btn').classList.add('hidden'); document.getElementById('exit-btn').classList.remove('hidden'); loadQ(0); }
     function showTab(t) { document.getElementById('tab-questions').classList.toggle('hidden', t!=='questions'); document.getElementById('tab-results').classList.toggle('hidden', t!=='results'); if(t==='results') renderResultsAdmin(); }
-    function exportResults() { alert("Dữ liệu đã được lưu trên máy."); }
+    
+    function renderResultsAdmin() {
+        const list = document.getElementById('admin-result-list');
+        list.innerHTML = '';
+        [...globalResults].reverse().forEach(res => {
+            list.innerHTML += `<tr><td>${res.date}</td><td>${res.duration}</td><td>${res.name}</td><td>${res.rank}</td><td>${res.unit}</td><td>${res.set}</td><td style="color:red; font-weight:bold">${res.score}</td><td>${res.classification}</td></tr>`;
+        });
+    }
 </script>
 </body>
 </html>
