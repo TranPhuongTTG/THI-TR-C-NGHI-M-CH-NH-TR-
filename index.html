@@ -1,3 +1,5 @@
+--- START OF FILE Paste June 01, 2026 - 2:35PM ---
+
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -21,56 +23,79 @@
             --army-red: #d41818; --army-yellow: #ffeb3b;
         }
         body { 
-            font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); margin: 0; overflow-x: hidden; height: 100vh; display: flex; flex-direction: column; 
+            font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); margin: 0; overflow-x: hidden; min-height: 100vh; display: flex; flex-direction: column; 
             -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;
         }
         .hidden { display: none !important; }
 
         .overlay { position: fixed; inset: 0; background: radial-gradient(circle, var(--blue-main), var(--navy)); display: flex; align-items: center; justify-content: center; z-index: 1000; flex-direction: column; padding: 10px; overflow-y: auto; }
-        .card { background: var(--white); padding: 25px; border-radius: 15px; width: 100%; max-width: 480px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center; box-sizing: border-box; }
+        .card { background: var(--white); padding: 20px; border-radius: 15px; width: 100%; max-width: 480px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center; box-sizing: border-box; margin: auto; }
         .logo-container { display: flex; justify-content: center; margin-bottom: 10px; }
-        .logo-container img { max-width: 80px; border: 2px solid var(--army-red); border-radius: 50%; padding: 5px; background: #fff; }
+        .logo-container img { max-width: 70px; border: 2px solid var(--army-red); border-radius: 50%; padding: 5px; background: #fff; }
 
         .software-title {
-            color: var(--army-red); font-size: 1.3rem; font-weight: 900; margin-bottom: 15px; text-transform: uppercase;
+            color: var(--army-red); font-size: 1.2rem; font-weight: 900; margin-bottom: 15px; text-transform: uppercase;
             text-shadow: -1px -1px 0 var(--army-yellow), 1px -1px 0 var(--army-yellow), -1px 1px 0 var(--army-yellow), 1px 1px 0 var(--army-yellow);
         }
 
         .input-group { display: flex; align-items: center; gap: 10px; margin: 8px 0; }
-        input, select, textarea { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; outline: none; }
+        input, select, textarea { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; outline: none; box-sizing: border-box; } /* Font 16px to prevent auto-zoom on iOS */
         label { display: block; text-align: left; font-weight: bold; font-size: 0.8rem; color: #444; margin-top: 5px; }
 
-        header { background: var(--army-red); color: var(--army-yellow); padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid var(--army-yellow); flex-shrink: 0; }
-        .timer-badge { background: var(--navy); color: white; padding: 5px 15px; border-radius: 30px; font-weight: bold; font-size: 1.1rem; }
-        main { display: flex; flex: 1; padding: 15px; gap: 15px; overflow: hidden; }
+        header { background: var(--army-red); color: var(--army-yellow); padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid var(--army-yellow); flex-shrink: 0; }
+        .timer-badge { background: var(--navy); color: white; padding: 5px 12px; border-radius: 30px; font-weight: bold; font-size: 1rem; }
+        
+        main { display: flex; flex: 1; padding: 10px; gap: 15px; overflow: hidden; }
         .sidebar { width: 260px; background: white; border-radius: 12px; padding: 15px; display: flex; flex-direction: column; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .quiz-container { flex: 1; background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); overflow-y: auto; }
-        .opt { padding: 12px 15px; border: 2px solid #eee; border-radius: 10px; margin-bottom: 10px; cursor: pointer; display: flex; align-items: center; background: #fafafa; text-align: left; }
+        .quiz-container { flex: 1; background: white; border-radius: 12px; padding: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); overflow-y: auto; }
+        
+        .opt { padding: 12px 15px; border: 2px solid #eee; border-radius: 10px; margin-bottom: 10px; cursor: pointer; display: flex; align-items: center; background: #fafafa; text-align: left; transition: 0.2s; }
         .opt.selected { background: #fff0f0; border-color: var(--army-red); font-weight: bold; }
         
         .opt.correct-review { background: #d1e7dd !important; border-color: #198754 !important; color: #0f5132; font-weight: bold; }
         .opt.wrong-review { background: #f8d7da !important; border-color: #dc3545 !important; color: #842029; }
 
-        .q-num { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; border: 1px solid #ccc; border-radius: 8px; cursor: pointer; font-weight: bold; }
-        .q-num.active { background: var(--navy); color: white; }
-        .q-num.done { background: var(--success); color: white; }
+        .q-num { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; border: 1px solid #ccc; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 0.9rem; }
+        .q-num.active { background: var(--navy); color: white; border-color: var(--navy); }
+        .q-num.done { background: var(--success); color: white; border-color: var(--success); }
 
-        .admin-panel { background: white; width: 98%; max-width: 1300px; border-radius: 15px; padding: 20px; max-height: 95vh; overflow-y: auto; }
-        .admin-tabs { display: flex; gap: 10px; margin-bottom: 15px; border-bottom: 2px solid var(--army-red); padding-bottom: 10px; align-items: center; }
-        .tab-link { padding: 8px 15px; background: #eee; cursor: pointer; border-radius: 5px; font-weight: bold; font-size: 0.85rem; }
+        .admin-panel { background: white; width: 98%; max-width: 1300px; border-radius: 15px; padding: 15px; max-height: 95vh; overflow-y: auto; box-sizing: border-box;}
+        .admin-tabs { display: flex; gap: 8px; margin-bottom: 15px; border-bottom: 2px solid var(--army-red); padding-bottom: 10px; align-items: center; overflow-x: auto; white-space: nowrap; }
+        .tab-link { padding: 8px 12px; background: #eee; cursor: pointer; border-radius: 5px; font-weight: bold; font-size: 0.75rem; }
         .tab-link.active { background: var(--army-red); color: var(--army-yellow); }
 
         .set-menu { display: flex; gap: 8px; overflow-x: auto; padding: 10px 0; margin-bottom: 15px; border-bottom: 1px solid #ddd; }
-        .set-item { padding: 6px 12px; background: #f0f0f0; border: 1px solid #ccc; border-radius: 20px; cursor: pointer; white-space: nowrap; font-size: 0.8rem; font-weight: bold; }
+        .set-item { padding: 6px 12px; background: #f0f0f0; border: 1px solid #ccc; border-radius: 20px; cursor: pointer; white-space: nowrap; font-size: 0.75rem; font-weight: bold; }
         .set-item.active { background: var(--blue-main); color: white; border-color: var(--blue-main); }
         .set-add { background: var(--success); color: white; border: none; padding: 6px 15px; border-radius: 20px; cursor: pointer; font-weight: bold; }
 
-        .btn-red { background: var(--army-red); color: var(--army-yellow); padding: 10px 15px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; text-transform: uppercase; }
-        .q-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; }
+        .btn-red { background: var(--army-red); color: var(--army-yellow); padding: 12px 15px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; text-transform: uppercase; font-size: 0.9rem; transition: 0.2s; }
+        .btn-red:active { transform: scale(0.98); opacity: 0.9; }
+        
+        .q-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 11px; }
         .q-table th, .q-table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
         .q-table th { background: var(--army-red); color: var(--army-yellow); position: sticky; top: 0; }
 
-        footer { background: var(--army-red); color: var(--army-yellow); padding: 8px; text-align: center; font-size: 0.8rem; font-weight: bold; }
+        footer { background: var(--army-red); color: var(--army-yellow); padding: 8px; text-align: center; font-size: 0.7rem; font-weight: bold; flex-shrink: 0; }
+
+        /* --- PHẦN CHỈNH SỬA THÍCH ỨNG ĐIỆN THOẠI (MOBILE RESPONSIVE) --- */
+        @media (max-width: 768px) {
+            main { flex-direction: column; overflow-y: auto; }
+            .sidebar { width: 100%; order: 2; box-shadow: none; border: 1px solid #ddd; }
+            .quiz-container { width: 100%; order: 1; min-height: 300px; }
+            .timer-badge { font-size: 0.9rem; padding: 4px 10px; }
+            #q-nav { grid-template-columns: repeat(8, 1fr) !important; }
+            #q-text { font-size: 1.1rem !important; }
+            .opt { font-size: 0.95rem; padding: 10px; }
+            .admin-panel { width: 100%; height: 100%; border-radius: 0; }
+            .card { width: 95%; padding: 15px; }
+            .software-title { font-size: 1rem; }
+            input, select, textarea { padding: 10px; }
+            #nav-btns { flex-direction: row; }
+            #nav-btns button { flex: 1; font-size: 0.8rem; }
+            .q-table { font-size: 10px; }
+            .tab-link { padding: 6px 10px; }
+        }
     </style>
 </head>
 <body oncontextmenu="return false;">
@@ -83,13 +108,13 @@
             <label>Mã đơn vị:</label>
             <div class="input-group">
                 <input type="text" id="login-id" placeholder="D1, P1, K1..." style="text-transform:uppercase" oninput="updateHint()">
-                <div id="unit-hint" style="font-size:0.7rem; color:red; font-weight:bold; width:120px; text-align:left;">(Chưa xác định)</div>
+                <div id="unit-hint" style="font-size:0.65rem; color:red; font-weight:bold; width:100px; text-align:left;">(Chưa xác định)</div>
             </div>
             <label>Mật khẩu:</label>
             <input type="password" id="login-pw" placeholder="Mật khẩu">
             
             <label>Mã kết nối phòng thi (ID):</label>
-            <input type="text" id="login-room-id-input" placeholder="Nhập ID phòng thi để lấy đúng đề" style="background:#fffbe6; border: 1px solid #ffe58f; margin-bottom: 10px; width:100%; box-sizing:border-box;">
+            <input type="text" id="login-room-id-input" placeholder="Nhập ID phòng thi" style="background:#fffbe6; border: 1px solid #ffe58f; margin-bottom: 10px; width:100%; box-sizing:border-box;">
 
             <div id="user-info-fields">
                 <hr style="margin:10px 0; border:0; border-top: 1px dashed #ccc;">
@@ -105,8 +130,8 @@
 
     <div id="welcome-screen" class="overlay hidden">
         <div class="card" style="max-width: 550px;">
-            <h2 style="color: var(--army-red);">THÔNG TIN BÀI THI</h2>
-            <div id="welcome-info" style="text-align: left; background: #f9f9f9; padding: 20px; border-radius: 8px; line-height: 1.6;"></div>
+            <h2 style="color: var(--army-red); font-size: 1.4rem;">THÔNG TIN BÀI THI</h2>
+            <div id="welcome-info" style="text-align: left; background: #f9f9f9; padding: 15px; border-radius: 8px; line-height: 1.6; font-size: 0.9rem;"></div>
             <button class="btn-red" style="padding: 15px; width:100%; margin-top:15px;" onclick="startExam()">BẮT ĐẦU</button>
         </div>
     </div>
@@ -116,14 +141,14 @@
             <div class="admin-tabs">
                 <div class="tab-link active" onclick="showTab('questions')">QUẢN LÝ CÂU HỎI</div>
                 <div class="tab-link" onclick="showTab('results')">KẾT QUẢ THI</div>
-                <button class="btn-red" onclick="location.reload()" style="margin-left:auto; background:#666;">ĐĂNG XUẤT</button>
+                <button class="btn-red" onclick="location.reload()" style="margin-left:auto; background:#666; padding: 5px 10px; font-size: 10px;">ĐĂNG XUẤT</button>
             </div>
 
             <div id="tab-questions">
                 <div class="set-menu" id="admin-set-menu"></div>
-                <div style="display: flex; flex-wrap: wrap; gap:20px;">
-                    <div style="flex: 1; min-width: 320px; background:#f9f9f9; padding:15px; border-radius:10px; border: 1px solid #ddd;">
-                        <h4>1. CẤU HÌNH & XUẤT QR</h4>
+                <div style="display: flex; flex-wrap: wrap; gap:15px;">
+                    <div style="flex: 1; min-width: 300px; background:#f9f9f9; padding:15px; border-radius:10px; border: 1px solid #ddd;">
+                        <h4 style="margin-top:0">1. CẤU HÌNH & XUẤT QR</h4>
                         <label>ID Kết nối (Phòng thi):</label>
                         <input type="text" id="admin-room-id" readonly style="background:#eee; font-weight:bold; color:red">
                         <label>Thời gian (phút):</label>
@@ -143,7 +168,7 @@
                         <div class="input-group"><input type="text" id="admin-d" placeholder="Đáp án D"> <input type="checkbox" class="correct-check" value="3"></div>
                         <button class="btn-red" style="width:100%; margin-top:10px;" onclick="saveQuestion()">LƯU CÂU HỎI</button>
                     </div>
-                    <div style="flex: 2; min-width: 320px;">
+                    <div style="flex: 2; min-width: 300px; overflow-x: auto;">
                         <table class="q-table">
                             <thead><tr><th>STT</th><th>Nội dung</th><th>Thao tác</th></tr></thead>
                             <tbody id="admin-list"></tbody>
@@ -153,14 +178,14 @@
             </div>
 
             <div id="tab-results" class="hidden">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <h3 style="color:var(--army-red)">THỐNG KÊ KẾT QUẢ THEO PHÒNG</h3>
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap: wrap; gap: 10px;">
+                    <h3 style="color:var(--army-red); margin:0; font-size: 1rem;">THỐNG KÊ KẾT QUẢ</h3>
                     <div>
                         <button class="btn-red" onclick="exportResultsToExcel()" style="background:#27ae60; font-size:10px; margin-right:5px">XUẤT EXCEL</button>
-                        <button class="btn-red" onclick="clearResultsCloud()" style="background:#c0392b; font-size:10px">XOÁ DỮ LIỆU PHÒNG</button>
+                        <button class="btn-red" onclick="clearResultsCloud()" style="background:#c0392b; font-size:10px">XOÁ DỮ LIỆU</button>
                     </div>
                 </div>
-                <div style="overflow-x:auto;">
+                <div style="overflow-x:auto; margin-top:10px;">
                     <table class="q-table" id="table-results">
                         <thead>
                             <tr>
@@ -182,31 +207,31 @@
 
     <div id="exam-ui" class="hidden" style="display:flex; flex-direction:column; height:100vh;">
         <header>
-            <div style="display:flex; align-items:center; gap:10px;"><i class="fas fa-star"></i>
-                <div><div id="disp-name" style="font-weight:bold; font-size: 0.9rem;">---</div><div id="disp-unit" style="font-size:0.7rem;">---</div></div>
+            <div style="display:flex; align-items:center; gap:8px;"><i class="fas fa-star" style="font-size: 0.8rem;"></i>
+                <div><div id="disp-name" style="font-weight:bold; font-size: 0.85rem;">---</div><div id="disp-unit" style="font-size:0.65rem;">---</div></div>
             </div>
             <div class="timer-badge" id="timer">00:00</div>
         </header>
         <main>
             <div class="sidebar">
-                <h4 style="margin: 0 0 10px 0; border-bottom:1px solid #eee; padding-bottom:5px;">TIẾN ĐỘ</h4>
+                <h4 style="margin: 0 0 10px 0; border-bottom:1px solid #eee; padding-bottom:5px; font-size: 0.9rem;">TIẾN ĐỘ</h4>
                 <div id="q-nav" style="display:grid; grid-template-columns: repeat(5, 1fr); gap:5px;"></div>
-                <button id="final-submit-btn" class="btn-red" style="margin-top:20px" onclick="submitExam()">NỘP BÀI</button>
-                <button id="exit-btn" class="btn-red hidden" style="margin-top:20px; background:#666;" onclick="location.reload()">THOÁT</button>
+                <button id="final-submit-btn" class="btn-red" style="margin-top:15px; font-size: 0.8rem;" onclick="submitExam()">NỘP BÀI</button>
+                <button id="exit-btn" class="btn-red hidden" style="margin-top:15px; background:#666; font-size: 0.8rem;" onclick="location.reload()">THOÁT</button>
             </div>
             <div class="quiz-container" id="capture-area">
                 <div id="quiz-area" class="quiz-layout">
-                    <div id="q-text" style="font-size: 1.4rem; font-weight: bold; color: var(--navy); margin-bottom:20px; line-height: 1.3;"></div>
+                    <div id="q-text" style="font-size: 1.2rem; font-weight: bold; color: var(--navy); margin-bottom:15px; line-height: 1.3;"></div>
                     <div id="options-area"></div>
-                    <div id="nav-btns" style="margin-top:20px; display:flex; justify-content:center; gap: 15px;">
+                    <div id="nav-btns" style="margin-top:20px; display:flex; justify-content:center; gap: 10px;">
                         <button class="btn-red" style="background:#666" onclick="changeQ(-1)">QUAY LẠI</button>
                         <button class="btn-red" onclick="changeQ(1)">TIẾP THEO</button>
                     </div>
                 </div>
                 <div id="result-area" class="hidden" style="text-align: center;">
-                    <h2 style="color:var(--army-red)">KẾT QUẢ BÀI THI</h2>
-                    <h1 id="res-grade" style="font-size: 3.5rem; margin:10px 0;"></h1>
-                    <div id="res-summary" style="background: #f8f9fa; padding: 20px; text-align: left; margin: 15px auto; border: 1px solid #ddd; border-radius: 10px;"></div>
+                    <h2 style="color:var(--army-red); font-size: 1.5rem;">KẾT QUẢ BÀI THI</h2>
+                    <h1 id="res-grade" style="font-size: 3rem; margin:10px 0;"></h1>
+                    <div id="res-summary" style="background: #f8f9fa; padding: 15px; text-align: left; margin: 15px auto; border: 1px solid #ddd; border-radius: 10px; font-size: 0.9rem;"></div>
                     <div class="no-capture" style="display:flex; justify-content:center; gap:10px;">
                         <button class="btn-red" onclick="startReview()">XEM LẠI</button>
                         <button class="btn-red" style="background:#666" onclick="location.reload()">THOÁT</button>
@@ -214,11 +239,11 @@
                 </div>
             </div>
         </main>
-        <footer>Sản phẩm được tạo bởi: Đ/c Thượng tá Hồ Quang Lợi, Trường Quân sự Quân đoàn 34</footer>
+        <footer>Sản phẩm của: Thượng tá Hồ Quang Lợi, Trường Quân sự Quân đoàn 34</footer>
     </div>
 
 <script>
-    // --- FIREBASE CONFIG ---
+    // --- FIREBASE CONFIG (GIỮ NGUYÊN) ---
     const firebaseConfig = {
         apiKey: "AIzaSyA2Zig8bOMyKAc0YtN1_NJG1f-8sA0itls",
         authDomain: "hethongbandanthat.firebaseapp.com",
@@ -306,7 +331,6 @@
         const t = document.getElementById('set-time').value;
         const qCount = document.getElementById('set-qty').value;
         
-        // ĐỒNG BỘ CẤU HÌNH PHÒNG LÊN SERVER ĐỂ MÁY KHÁC TRUY CẬP ĐƯỢC
         const config = {
             setName: currentActiveSet,
             time: t,
@@ -318,9 +342,9 @@
             const url = `${window.location.origin}${window.location.pathname}?room=${currentRoomID}`;
             const qrContainer = document.getElementById('qrcode');
             qrContainer.innerHTML = "";
-            new QRCode(qrContainer, { text: url, width: 160, height: 160 });
+            new QRCode(qrContainer, { text: url, width: 140, height: 140 });
             startListeningResults();
-            alert(`Đã kích hoạt ID: ${currentRoomID} trên toàn hệ thống.\nBây giờ thí sinh có thể nhập mã này để thi.`);
+            alert(`Đã kích hoạt ID: ${currentRoomID} thành công!`);
         });
     }
 
@@ -341,7 +365,6 @@
 
         document.getElementById('login-btn').innerText = "ĐANG KẾT NỐI...";
         
-        // LẤY CẤU HÌNH TỪ FIREBASE (GIÚP TRUY CẬP TỪ MỌI THIẾT BỊ)
         const snapshot = await db.ref('room_configs/' + roomInput).once('value');
         if(!snapshot.exists()) {
             document.getElementById('login-btn').innerText = "ĐĂNG NHẬP";
@@ -365,7 +388,6 @@
         currentRoomID = roomInput;
         userData = { name, rank, unit: USER_MAP[id], extra, id, setName: config.setName };
         
-        // TRỘN NGẪU NHIÊN
         examQuestions = [...config.questions].sort(() => 0.5 - Math.random()).slice(0, parseInt(config.qty));
         timeLeft = parseInt(config.time) * 60;
         
@@ -407,6 +429,7 @@
         });
         document.querySelectorAll('.q-num').forEach(n => n.classList.remove('active'));
         document.getElementById(`nav-${idx}`).classList.add('active');
+        document.getElementById(`nav-${idx}`).scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
     }
 
     function submitExam() {
