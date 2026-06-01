@@ -1,3 +1,5 @@
+--- START OF FILE Paste June 01, 2026 - 9:39AM ---
+
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -59,7 +61,7 @@
         
         .btn-red { background: var(--army-red); color: var(--army-yellow); padding: 12px 25px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; text-transform: uppercase; }
 
-        .admin-panel { background: white; width: 95%; max-width: 1200px; border-radius: 15px; padding: 25px; max-height: 95vh; overflow-y: auto; color: #333; }
+        .admin-panel { background: white; width: 95%; max-width: 1300px; border-radius: 15px; padding: 25px; max-height: 95vh; overflow-y: auto; color: #333; }
         .q-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
         .q-table th, .q-table td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 13px; }
         .q-table th { background: var(--army-red); color: var(--army-yellow); position: sticky; top: 0; }
@@ -158,14 +160,15 @@
 
             <div id="tab-results" class="hidden">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <h3>DANH SÁCH THÍ SINH ĐÃ THI</h3>
+                    <h3>DANH SÁCH THÍ SINH ĐÃ THI (THỜI GIAN THỰC)</h3>
                     <button class="btn-red" onclick="exportResults()">XUẤT EXCEL (MÔ PHỎNG)</button>
                 </div>
                 <div style="overflow-y:auto; max-height: 75vh;">
                     <table class="q-table">
                         <thead>
                             <tr>
-                                <th>Thời gian</th>
+                                <th>Thời điểm nộp</th>
+                                <th>Thời gian làm</th>
                                 <th>Họ và Tên</th>
                                 <th>Cấp bậc/Chức vụ</th>
                                 <th>Khối Đơn vị</th>
@@ -232,6 +235,7 @@
     let globalResults = JSON.parse(localStorage.getItem('army_results_all')) || [];
 
     let examQuestions = [], currentQ = 0, answers = [], timeLeft = 0, timer, userData = {}, isReview = false;
+    let examStartTime = null; // Theo dõi thời gian thực bắt đầu làm bài
 
     // Hiển thị Tab Admin
     function showTab(tabId) {
@@ -244,6 +248,7 @@
     function updateHint() {
         const id = document.getElementById('login-id').value.toUpperCase();
         document.getElementById('unit-hint').innerText = USER_MAP[id] ? `( ${USER_MAP[id]} )` : "(Chưa xác định)";
+        // YÊU CẦU: Nếu là ADMIN thì ẩn các trường nhập thông tin
         document.getElementById('user-info-fields').style.display = (id === "ADMIN") ? "none" : "block";
     }
 
@@ -254,7 +259,7 @@
         
         const qrContainer = document.getElementById('qrcode');
         qrContainer.innerHTML = "";
-        const url = window.location.href.split('?')[0]; // Lấy link hiện tại
+        const url = window.location.href.split('?')[0]; 
         new QRCode(qrContainer, { text: url, width: 128, height: 128 });
         document.getElementById('qr-link').innerText = "Link quét: " + url;
         alert("Đã cấu hình đề thi! Thí sinh quét mã để tham gia.");
@@ -264,6 +269,7 @@
         const id = document.getElementById('login-id').value.toUpperCase();
         const pw = document.getElementById('login-pw').value;
         
+        // ADMIN LOGIN: Không cần thông tin phụ
         if (id === "ADMIN" && pw === "HQL123") {
             document.getElementById('login-screen').classList.add('hidden');
             document.getElementById('admin-screen').classList.remove('hidden');
@@ -275,7 +281,7 @@
         const unitExtra = document.getElementById('user-unit-extra').value;
 
         if (!USER_MAP[id] || pw !== "123") return alert("Sai thông tin đăng nhập!");
-        if (!name || !rank || !unitExtra) return alert("Vui lòng nhập đủ thông tin!");
+        if (!name || !rank || !unitExtra) return alert("Vui lòng nhập đủ thông tin cá nhân!");
 
         // Phân loại khối đơn vị
         let unitGroup = "Khối khác";
@@ -285,7 +291,6 @@
 
         userData = { name, rank, unitId: id, unitName: USER_MAP[id], unitExtra, unitGroup };
         
-        // Trộn câu hỏi tự động
         const qty = Math.min(savedConfig.qty, bank.length); 
         examQuestions = [...bank].sort(() => 0.5 - Math.random()).slice(0, qty);
         timeLeft = savedConfig.time * 60;
@@ -316,11 +321,11 @@
     function renderResultsAdmin() {
         const list = document.getElementById('admin-result-list');
         list.innerHTML = '';
-        // Sắp xếp kết quả mới nhất lên trên
         [...globalResults].reverse().forEach(res => {
             list.innerHTML += `
                 <tr>
                     <td>${res.date}</td>
+                    <td>${res.duration || 'N/A'}</td>
                     <td><b>${res.name}</b></td>
                     <td>${res.rank}</td>
                     <td>${res.unitGroup}</td>
@@ -363,6 +368,9 @@
         document.getElementById('exam-ui').classList.remove('hidden');
         document.getElementById('disp-name').innerText = `${userData.rank} ${userData.name}`;
         document.getElementById('disp-unit').innerText = `Đơn vị: ${userData.unitName}`;
+        
+        examStartTime = Date.now(); // Ghi nhận thời điểm bắt đầu (thời gian thực)
+        
         answers = examQuestions.map(() => []); initNav(); loadQ(0);
         timer = setInterval(() => {
             let m = Math.floor(timeLeft/60), s = timeLeft%60;
@@ -409,6 +417,12 @@
 
     function submitExam() {
         if(!isReview && !confirm("Đồng chí có chắc chắn nộp bài?")) return; clearInterval(timer);
+        
+        // Tính toán thời gian làm bài thực tế
+        const submitTime = Date.now();
+        const diffSecs = Math.floor((submitTime - examStartTime) / 1000);
+        const durationStr = `${Math.floor(diffSecs/60)}p ${diffSecs%60}s`;
+
         document.getElementById('quiz-area').classList.add('hidden');
         document.getElementById('result-area').classList.remove('hidden');
         
@@ -420,11 +434,19 @@
 
         document.getElementById('res-grade').innerText = final >= 5 ? "ĐẠT" : "KHÔNG ĐẠT";
         document.getElementById('res-grade').style.color = final >= 5 ? "var(--success)" : "var(--danger)";
-        document.getElementById('res-summary').innerHTML = `<b>Họ tên:</b> ${userData.name}<br><b>Đơn vị:</b> ${userData.unitName}<hr>Đúng: ${score}/${examQuestions.length} câu<br>Điểm: <span style="font-size:1.8rem; color:red">${final.toFixed(1)}</span><br>Xếp loại: <b>${classification}</b>`;
+        document.getElementById('res-summary').innerHTML = `
+            <b>Họ tên:</b> ${userData.name}<br>
+            <b>Đơn vị:</b> ${userData.unitName}<br>
+            <b>Thời gian làm:</b> ${durationStr}<hr>
+            Đúng: ${score}/${examQuestions.length} câu<br>
+            Điểm: <span style="font-size:1.8rem; color:red">${final.toFixed(1)}</span><br>
+            Xếp loại: <b>${classification}</b>
+        `;
 
-        // LƯU KẾT QUẢ VÀO HỆ THỐNG QUẢN TRỊ
+        // LƯU KẾT QUẢ VỚI THÔNG TIN THỜI GIAN THỰC
         const resultObj = {
             date: new Date().toLocaleString('vi-VN'),
+            duration: durationStr,
             name: userData.name,
             rank: userData.rank,
             unitGroup: userData.unitGroup,
@@ -436,7 +458,6 @@
         globalResults.push(resultObj);
         localStorage.setItem('army_results_all', JSON.stringify(globalResults));
 
-        // Tự động chụp ảnh
         setTimeout(() => {
             html2canvas(document.getElementById('capture-area'), { ignoreElements: (el) => el.classList.contains('no-capture') }).then(canvas => {
                 const link = document.createElement('a');
@@ -457,7 +478,7 @@
     }
 
     function exportResults() {
-        alert("Tính năng này yêu cầu Backend. Hiện tại bạn có thể xem trực tiếp trên bảng Kết quả thi.");
+        alert("Dữ liệu đã được lưu trữ trên hệ thống ADMIN. Đồng chí có thể sao chép trực tiếp từ bảng kết quả.");
     }
 </script>
 </body>
