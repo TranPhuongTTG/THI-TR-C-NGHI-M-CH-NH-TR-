@@ -251,7 +251,6 @@
             currentRoomID = params.get('room');
             document.getElementById('login-room-id-input').value = currentRoomID;
         }
-        // NẾU CÓ DỮ LIỆU CÂU HỎI TỪ QR (THAM SỐ d), CẬP NHẬT VÀO BANK NGAY
         if(params.has('d')) {
             try {
                 const decodedData = JSON.parse(decodeURIComponent(escape(atob(params.get('d')))));
@@ -319,7 +318,6 @@
         const filtered = bank.filter(q => (q.set || "Chung") === currentActiveSet);
         if(filtered.length === 0) return alert("Bộ đề này chưa có câu hỏi!");
         
-        // MÃ HÓA CÂU HỎI VÀO QR ĐỂ THÍ SINH NHẬN ĐÚNG ĐỀ
         const dataStr = btoa(unescape(encodeURIComponent(JSON.stringify(filtered))));
         const t = document.getElementById('set-time').value;
         const q = document.getElementById('set-qty').value;
@@ -347,7 +345,7 @@
 
         currentRoomID = document.getElementById('login-room-id-input').value.trim();
         
-        // LOGIC QUAN TRỌNG: Ưu tiên lấy Bộ đề từ URL (quét QR) trước, nếu nhập tay ID thì mới tìm trong map
+        // TÌM TÊN BỘ ĐỀ GẮN VỚI ID PHÒNG NÀY (Từ local hoặc từ URL)
         let targetSetName = params.get('s'); 
         if(!targetSetName) {
             for(let s in setRoomMap) {
@@ -355,7 +353,22 @@
             }
         }
 
-        if(!targetSetName && !params.has('d')) return alert("Mã kết nối phòng thi không chính xác!");
+        // --- ĐOẠN LỌC CÂU HỎI QUAN TRỌNG ---
+        let filteredBank = [];
+        
+        // 1. Nếu quét QR và có dữ liệu 'd' trong URL, lấy dữ liệu đó làm đề thi luôn
+        if(params.has('d')) {
+             try {
+                filteredBank = JSON.parse(decodeURIComponent(escape(atob(params.get('d')))));
+             } catch(e) { console.error("Lỗi dữ liệu đề thi"); }
+        } 
+        
+        // 2. Nếu không có 'd', lọc từ bank tổng dựa trên targetSetName đã tìm được từ Mã phòng
+        if (filteredBank.length === 0 && targetSetName) {
+            filteredBank = bank.filter(q => (q.set || "Chung") === targetSetName);
+        }
+
+        if(filteredBank.length === 0) return alert("Mã kết nối phòng thi không chính xác hoặc bộ đề này chưa có câu hỏi!");
 
         const name = document.getElementById('user-name').value;
         const rank = document.getElementById('user-rank').value;
@@ -365,17 +378,11 @@
 
         userData = { name, rank, unit: USER_MAP[id], extra, id, setName: targetSetName || "Tự chọn" };
         
-        // Lấy câu hỏi từ bank (đã được cập nhật từ QR ở window.onload)
-        let filteredBank = bank;
-        // Nếu không quét QR (không có d) thì mới lọc theo targetSetName
-        if(!params.has('d')) {
-            filteredBank = bank.filter(q => (q.set || "Chung") === targetSetName);
-        }
-        
         const qtyReq = parseInt(params.get('q')) || 20;
         const timeReq = parseInt(params.get('t')) || 15;
         const qty = Math.min(qtyReq, filteredBank.length);
 
+        // TRỘN NGẪU NHIÊN CÂU HỎI CỦA ĐÚNG BỘ ĐỀ ĐÓ
         examQuestions = [...filteredBank].sort(() => 0.5 - Math.random()).slice(0, qty);
         timeLeft = timeReq * 60;
         
