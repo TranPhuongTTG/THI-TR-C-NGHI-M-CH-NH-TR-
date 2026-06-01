@@ -1,3 +1,5 @@
+--- START OF FILE Paste June 01, 2026 - 10:38AM ---
+
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -7,6 +9,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <!-- THƯ VIỆN XUẤT FILE EXCEL -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     
     <!-- FIREBASE (KẾT NỐI THỜI GIAN THỰC) -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
@@ -122,7 +126,7 @@
                         <input type="text" id="admin-room-id" readonly style="background:#eee; font-weight:bold; color:red">
                         <label>Thời gian (phút):</label>
                         <input type="number" id="set-time" value="15" style="width:100%">
-                        <label>Số câu hỏi lấy ra:</label>
+                        <label>Số câu :</label>
                         <input type="number" id="set-qty" value="20" style="width:100%">
                         <button class="btn-red" style="width:100%; margin-top:10px; background: #27ae60;" onclick="createExamQR()">TẠO QR THI TRỰC TUYẾN</button>
                         <div id="qrcode" style="margin-top: 10px; display: flex; justify-content: center;"></div>
@@ -147,7 +151,13 @@
             </div>
 
             <div id="tab-results" class="hidden">
-                <h3 style="color:var(--army-red)">THỐNG KÊ KẾT QUẢ THỜI GIAN THỰC</h3>
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <h3 style="color:var(--army-red)">THỐNG KÊ KẾT QUẢ</h3>
+                    <div>
+                        <button class="btn-red" onclick="exportResultsToExcel()" style="background:#27ae60; font-size:10px; margin-right:5px">XUẤT FILE EXCEL</button>
+                        <button class="btn-red" onclick="clearResultsCloud()" style="background:#c0392b; font-size:10px">XOÁ DỮ LIỆU MÁY CHỦ</button>
+                    </div>
+                </div>
                 <div style="overflow-x:auto;">
                     <table class="q-table" id="table-results">
                         <thead>
@@ -202,7 +212,7 @@
                 </div>
             </div>
         </main>
-        <footer>Sản phẩm: Thượng tá Hồ Quang Lợi - Quân đoàn 34</footer>
+        <footer>Sản phẩm được tạo bởi: Đ/c Thượng tá Hồ Quang Lợi, Phó chủ nhiệm chính trị- Trường Quân sự Quân đoàn 34</footer>
     </div>
 
 <script>
@@ -228,11 +238,7 @@
 
     window.onload = function() {
         const params = new URLSearchParams(window.location.search);
-        
-        // 1. Nhận RoomID từ QR
         if(params.has('room')) currentRoomID = params.get('room');
-
-        // 2. Đồng bộ đề thi từ QR
         if(params.has('d')) {
             try {
                 const decodedData = JSON.parse(decodeURIComponent(escape(atob(params.get('d')))));
@@ -290,22 +296,17 @@
     function createExamQR() {
         const filtered = bank.filter(q => (q.set || "Chung") === currentActiveSet);
         if(filtered.length === 0) return alert("Bộ đề này chưa có câu hỏi!");
-        
         const dataStr = btoa(unescape(encodeURIComponent(JSON.stringify(filtered))));
         const t = document.getElementById('set-time').value;
         const q = document.getElementById('set-qty').value;
         const url = `${window.location.origin}${window.location.pathname}?room=${currentRoomID}&t=${t}&q=${q}&s=${encodeURIComponent(currentActiveSet)}&d=${dataStr}`;
-        
         const qrContainer = document.getElementById('qrcode');
         qrContainer.innerHTML = "";
         new QRCode(qrContainer, { text: url, width: 160, height: 160 });
-        
-        // Lắng nghe kết quả thời gian thực ngay khi tạo QR
         startListeningResults();
         alert("Đã tạo QR và mở phòng thi trực tuyến ID: " + currentRoomID);
     }
 
-    // --- LẮNG NGHE KẾT QUẢ TỪ FIREBASE ---
     function startListeningResults() {
         if(!currentRoomID) return;
         db.ref('quiz_results/' + currentRoomID).on('value', (snapshot) => {
@@ -320,6 +321,17 @@
         });
     }
 
+    function clearResultsCloud() {
+        if(confirm("Xoá toàn bộ dữ liệu trên máy chủ?")) db.ref('quiz_results/' + currentRoomID).remove();
+    }
+
+    // --- HÀM XUẤT EXCEL ---
+    function exportResultsToExcel() {
+        const table = document.getElementById('table-results');
+        const wb = XLSX.utils.table_to_book(table, {sheet: "KetQuaThi"});
+        XLSX.writeFile(wb, "KetQuaThi_TruongQuanSu_QD34.xlsx");
+    }
+
     function handleLogin() {
         const id = document.getElementById('login-id').value.toUpperCase();
         const pw = document.getElementById('login-pw').value;
@@ -330,36 +342,24 @@
                 renderAdmin(); return;
             } else return alert("Sai mật khẩu Admin!");
         }
-
         const name = document.getElementById('user-name').value;
         const rank = document.getElementById('user-rank').value;
         const extra = document.getElementById('user-unit-extra').value;
         if (!USER_MAP[id] || pw !== "123") return alert("Thông tin đăng nhập sai!");
         if (!name || !rank || !extra) return alert("Vui lòng nhập đủ thông tin thí sinh!");
-
         userData = { name, rank, unit: USER_MAP[id], extra, id };
-        
         const params = new URLSearchParams(window.location.search);
         const setReq = params.get('s') || "Chung";
         let filteredBank = bank.filter(q => (q.set || "Chung") === setReq);
         if(filteredBank.length === 0) filteredBank = bank;
-
         const qtyReq = parseInt(params.get('q')) || 20;
         const timeReq = parseInt(params.get('t')) || 15;
-        
         const qty = Math.min(qtyReq, filteredBank.length);
         examQuestions = [...filteredBank].sort(() => 0.5 - Math.random()).slice(0, qty);
         timeLeft = timeReq * 60;
-        
         document.getElementById('login-screen').classList.add('hidden');
         document.getElementById('welcome-screen').classList.remove('hidden');
-        document.getElementById('welcome-info').innerHTML = `
-            <b>Thí sinh:</b> ${userData.rank} ${userData.name}<br>
-            <b>Đơn vị:</b> ${userData.unit} (${userData.extra})<br>
-            <b>Bộ đề thi:</b> ${setReq}<br>
-            <b>Số câu hỏi:</b> ${examQuestions.length} câu<br>
-            <b>Thời gian:</b> ${timeReq} phút
-        `;
+        document.getElementById('welcome-info').innerHTML = `<b>Thí sinh:</b> ${userData.rank} ${userData.name}<br><b>Đơn vị:</b> ${userData.unit} (${userData.extra})<br><b>Bộ đề thi:</b> ${setReq}<br><b>Số câu hỏi:</b> ${examQuestions.length} câu<br><b>Thời gian:</b> ${timeReq} phút`;
     }
 
     function startExam() {
@@ -384,6 +384,10 @@
             const d = document.createElement('div');
             const isSel = answers[idx].includes(i);
             d.className = `opt ${isSel ? 'selected' : ''}`;
+            if (isReview) {
+                if (q.correct.includes(i)) d.classList.add('correct-review');
+                else if (isSel) d.classList.add('wrong-review');
+            }
             d.innerHTML = `<b>${String.fromCharCode(65+i)}.</b> &nbsp; ${o}`;
             if (!isReview) d.onclick = () => { answers[idx] = [i]; document.getElementById(`nav-${idx}`).classList.add('done'); loadQ(idx); };
             area.appendChild(d);
@@ -396,26 +400,14 @@
         if(!isReview && !confirm("Đồng chí chắc chắn nộp bài?")) return; clearInterval(timer);
         let timeUsed = Math.floor((Date.now() - startTimestamp) / 1000);
         let duration = `${Math.floor(timeUsed/60)}p ${timeUsed%60}s`;
-        
         let score = 0;
         examQuestions.forEach((q, i) => { if(answers[i].sort().join(',') === q.correct.sort().join(',') && answers[i].length > 0) score++; });
         const final = (score/examQuestions.length)*10;
         const cls = final >= 8 ? "GIỎI" : final >= 6.5 ? "KHÁ" : final >= 5 ? "ĐẠT" : "KHÔNG ĐẠT";
-
-        // GỬI KẾT QUẢ LÊN FIREBASE
         if(currentRoomID) {
-            const resultData = {
-                date: new Date().toLocaleString('vi-VN'),
-                duration: duration,
-                name: userData.name,
-                unit: userData.unit,
-                set: (new URLSearchParams(window.location.search).get('s') || "Chung"),
-                score: final.toFixed(1),
-                classification: cls
-            };
+            const resultData = { date: new Date().toLocaleString('vi-VN'), duration, name: userData.name, unit: userData.unit, set: (new URLSearchParams(window.location.search).get('s') || "Chung"), score: final.toFixed(1), classification: cls };
             db.ref('quiz_results/' + currentRoomID).push(resultData);
         }
-
         document.getElementById('quiz-area').classList.add('hidden');
         document.getElementById('result-area').classList.remove('hidden');
         document.getElementById('res-grade').innerText = cls;
@@ -428,18 +420,25 @@
         document.getElementById('tab-results').classList.toggle('hidden', t!=='results'); 
         if(t==='results') startListeningResults(); 
     }
-
-    // Các hàm quản trị khác giữ nguyên
     function saveQuestion() {
         const q = document.getElementById('admin-q').value;
         const opts = [document.getElementById('admin-a').value, document.getElementById('admin-b').value, document.getElementById('admin-c').value, document.getElementById('admin-d').value];
         const correct = Array.from(document.querySelectorAll('.correct-check:checked')).map(cb => parseInt(cb.value));
-        if(!q || correct.length === 0) return alert("Nhập đủ thông tin!");
-        bank.push({q, opts, correct, set: currentActiveSet});
+        const editIdx = parseInt(document.getElementById('edit-index').value);
+        if(!q || opts.some(o => !o) || correct.length === 0) return alert("Nhập đủ thông tin!");
+        const item = {q, opts, correct, set: currentActiveSet};
+        if(editIdx === -1) bank.push(item); else bank[editIdx] = item;
         localStorage.setItem('army_bank_v_final', JSON.stringify(bank));
-        renderAdmin();
+        clearAdminForm(); renderAdmin();
     }
+    function clearAdminForm() { document.getElementById('admin-q').value = ''; ['a','b','c','d'].forEach(l => document.getElementById('admin-'+l).value = ''); document.querySelectorAll('.correct-check').forEach(cb => cb.checked = false); document.getElementById('edit-index').value = "-1"; }
     function deleteQ(i) { if(confirm("Xóa?")) { bank.splice(i, 1); localStorage.setItem('army_bank_v_final', JSON.stringify(bank)); renderAdmin(); } }
+    function editQ(i) {
+        const item = bank[i]; document.getElementById('admin-q').value = item.q;
+        item.opts.forEach((o, idx) => document.getElementById('admin-'+['a','b','c','d'][idx]).value = o);
+        document.querySelectorAll('.correct-check').forEach(cb => cb.checked = item.correct.includes(parseInt(cb.value)));
+        document.getElementById('edit-index').value = i;
+    }
     function changeQ(s) { let n = currentQ + s; if(n>=0 && n<examQuestions.length) loadQ(n); }
     function initNav() {
         const nav = document.getElementById('q-nav'); nav.innerHTML = '';
