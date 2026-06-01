@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -14,6 +13,9 @@
     <!-- FIREBASE (KẾT NỐI THỜI GIAN THỰC) -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+    <!-- THƯ VIỆN BIỂU ĐỒ -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
         :root {
@@ -77,6 +79,9 @@
 
         footer { background: var(--army-red); color: var(--army-yellow); padding: 8px; text-align: center; font-size: 0.7rem; font-weight: bold; flex-shrink: 0; }
 
+        /* BỔ SUNG CSS BIỂU ĐỒ */
+        .chart-container { width: 100%; max-width: 400px; margin: 20px auto; background: #fff; padding: 15px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+
         /* --- PHẦN CHỈNH SỬA THÍCH ỨNG ĐIỆN THOẠI (MOBILE RESPONSIVE) --- */
         @media (max-width: 768px) {
             main { flex-direction: column; overflow-y: auto; }
@@ -123,7 +128,7 @@
             </div>
             
             <button id="login-btn" class="btn-red" style="width:100%; margin-top:15px; padding: 15px;" onclick="handleLogin()">ĐĂNG NHẬP</button>
-            <footer style="margin-top:15px; background:none; color:#666;">Bản quyền: Thượng tá Hồ Quang Lợi, Trường Quân sự Quân đoàn 34</footer>
+            <footer style="margin-top:15px; background:none; color:#666;">Bản quyền: Thượng tá Hồ Quang Lợi, Phó chủ nhiệm chính trị, Trường Quân sự Quân đoàn 34</footer>
         </div>
     </div>
 
@@ -154,7 +159,7 @@
                         <input type="number" id="set-time" value="15" style="width:100%">
                         <label>Số câu thi:</label>
                         <input type="number" id="set-qty" value="20" style="width:100%">
-                        <button class="btn-red" style="width:100%; margin-top:10px; background: #27ae60;" onclick="createExamQR()">TẠO QR THI THEO ID</button>
+                        <button class="btn-red" style="width:100%; margin-top:10px; background: #27ae60;" onclick="createExamQR()">TẠO QR </button>
                         <div id="qrcode" style="margin-top: 10px; display: flex; justify-content: center;"></div>
                         
                         <hr>
@@ -184,17 +189,25 @@
                         <button class="btn-red" onclick="clearResultsCloud()" style="background:#c0392b; font-size:10px">XOÁ DỮ LIỆU</button>
                     </div>
                 </div>
+
+                <!-- KHU VỰC BIỂU ĐỒ -->
+                <div class="chart-container">
+                    <canvas id="resultChart"></canvas>
+                </div>
+
                 <div style="overflow-x:auto; margin-top:10px;">
                     <table class="q-table" id="table-results">
                         <thead>
                             <tr>
-                                <th>Thời gian nộp</th>
-                                <th>Làm bài</th>
+                                <th>Đơn vị (Tổng hợp)</th>
+                                <th>Đơn vị cụ thể</th>
                                 <th>Họ tên</th>
-                                <th>Đơn vị</th>
                                 <th>Bộ đề</th>
+                                <th>Số câu đúng</th>
                                 <th>Điểm</th>
                                 <th>Xếp loại</th>
+                                <th>Thời gian nộp</th>
+                                <th>Làm bài</th>
                             </tr>
                         </thead>
                         <tbody id="admin-result-list"></tbody>
@@ -238,11 +251,11 @@
                 </div>
             </div>
         </main>
-        <footer>Sản phẩm của: Thượng tá Hồ Quang Lợi, Trường Quân sự Quân đoàn 34</footer>
+        <footer>Phần mềm được tạo bởi: Thượng tá Hồ Quang Lợi, Phó chủ nhiệm chính trị, Trường Quân sự Quân đoàn 34</footer>
     </div>
 
 <script>
-    // --- FIREBASE CONFIG (GIỮ NGUYÊN) ---
+    // --- FIREBASE CONFIG ---
     const firebaseConfig = {
         apiKey: "AIzaSyA2Zig8bOMyKAc0YtN1_NJG1f-8sA0itls",
         authDomain: "hethongbandanthat.firebaseapp.com",
@@ -262,6 +275,7 @@
     let currentActiveSet = "Chung";
     let examQuestions = [], currentQ = 0, answers = [], timeLeft = 0, timer, userData = {}, isReview = false, startTimestamp = 0;
     let currentRoomID = "";
+    let myChart = null; // Biến giữ biểu đồ
 
     window.onload = function() {
         const params = new URLSearchParams(window.location.search);
@@ -435,18 +449,30 @@
         if(!isReview && !confirm("Đồng chí chắc chắn nộp bài?")) return; clearInterval(timer);
         let timeUsed = Math.floor((Date.now() - startTimestamp) / 1000);
         let duration = `${Math.floor(timeUsed/60)}p ${timeUsed%60}s`;
-        let score = 0;
-        examQuestions.forEach((q, i) => { if(answers[i].sort().join(',') === q.correct.sort().join(',') && answers[i].length > 0) score++; });
-        const final = (score/examQuestions.length)*10;
+        let scoreCount = 0;
+        examQuestions.forEach((q, i) => { if(answers[i].sort().join(',') === q.correct.sort().join(',') && answers[i].length > 0) scoreCount++; });
+        const final = (scoreCount/examQuestions.length)*10;
         const cls = final >= 8 ? "GIỎI" : final >= 6.5 ? "KHÁ" : final >= 5 ? "ĐẠT" : "KHÔNG ĐẠT";
         
-        db.ref('quiz_results/' + currentRoomID).push({ date: new Date().toLocaleString('vi-VN'), duration, name: userData.name, unit: userData.unit, set: userData.setName, score: final.toFixed(1), classification: cls });
+        // Đẩy thêm dữ liệu số câu đúng và đơn vị cụ thể
+        db.ref('quiz_results/' + currentRoomID).push({ 
+            date: new Date().toLocaleString('vi-VN'), 
+            duration, 
+            name: userData.name, 
+            unit: userData.unit, 
+            extra: userData.extra, // Đơn vị cụ thể
+            set: userData.setName, 
+            score: final.toFixed(1), 
+            correctCount: scoreCount, // Số câu đúng
+            totalQuestions: examQuestions.length, // Tổng số câu
+            classification: cls 
+        });
         
         document.getElementById('quiz-area').classList.add('hidden');
         document.getElementById('result-area').classList.remove('hidden');
         document.getElementById('res-grade').innerText = cls;
         document.getElementById('res-grade').style.color = final >= 5 ? "var(--success)" : "var(--danger)";
-        document.getElementById('res-summary').innerHTML = `<b>Thí sinh:</b> ${userData.name}<br><b>Điểm:</b> <span style="color:red; font-weight:bold">${final.toFixed(1)}</span><br><b>Thời gian:</b> ${duration}`;
+        document.getElementById('res-summary').innerHTML = `<b>Thí sinh:</b> ${userData.name}<br><b>Điểm:</b> <span style="color:red; font-weight:bold">${final.toFixed(1)}</span><br><b>Đúng:</b> ${scoreCount}/${examQuestions.length} câu<br><b>Thời gian:</b> ${duration}`;
     }
 
     function startReview() {
@@ -466,13 +492,70 @@
     
     function startListeningResults() {
         db.ref('quiz_results/' + currentRoomID).on('value', (snapshot) => {
-            const list = document.getElementById('admin-result-list'); list.innerHTML = '';
+            const list = document.getElementById('admin-result-list'); 
+            list.innerHTML = '';
+            
             if(snapshot.exists()) {
-                Object.values(snapshot.val()).reverse().forEach(res => {
-                    list.innerHTML += `<tr><td>${res.date}</td><td>${res.duration}</td><td>${res.name}</td><td>${res.unit}</td><td>${res.set}</td><td style="color:red; font-weight:bold">${res.score}</td><td>${res.classification}</td></tr>`;
+                const rawData = Object.values(snapshot.val());
+                
+                // 1. SẮP XẾP THEO ĐƠN VỊ (UNIT) RỒI ĐẾN ĐƠN VỊ CỤ THỂ (EXTRA)
+                rawData.sort((a, b) => {
+                    if (a.unit < b.unit) return -1;
+                    if (a.unit > b.unit) return 1;
+                    return a.extra.localeCompare(b.extra);
                 });
+
+                let stats = { "GIỎI": 0, "KHÁ": 0, "ĐẠT": 0, "KHÔNG ĐẠT": 0 };
+
+                rawData.forEach(res => {
+                    stats[res.classification]++;
+                    list.innerHTML += `
+                        <tr>
+                            <td>${res.unit}</td>
+                            <td>${res.extra || ''}</td>
+                            <td>${res.name}</td>
+                            <td>${res.set}</td>
+                            <td style="text-align:center">${res.correctCount || '0'}/${res.totalQuestions || '0'}</td>
+                            <td style="color:red; font-weight:bold">${res.score}</td>
+                            <td>${res.classification}</td>
+                            <td>${res.date}</td>
+                            <td>${res.duration}</td>
+                        </tr>`;
+                });
+
+                // 2. CẬP NHẬT BIỂU ĐỒ
+                updateChart(stats);
             }
         });
+    }
+
+    function updateChart(stats) {
+        const ctx = document.getElementById('resultChart').getContext('2d');
+        const data = {
+            labels: ['Giỏi', 'Khá', 'Đạt', 'Không đạt'],
+            datasets: [{
+                data: [stats["GIỎI"], stats["KHÁ"], stats["ĐẠT"], stats["KHÔNG ĐẠT"]],
+                backgroundColor: ['#27ae60', '#2980b9', '#f1c40f', '#c0392b'],
+                hoverOffset: 4
+            }]
+        };
+
+        if (myChart) {
+            myChart.data = data;
+            myChart.update();
+        } else {
+            myChart = new Chart(ctx, {
+                type: 'pie',
+                data: data,
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'bottom' },
+                        title: { display: true, text: 'BIỂU ĐỒ PHÂN LOẠI KẾT QUẢ' }
+                    }
+                }
+            });
+        }
     }
 
     function saveQuestion() {
