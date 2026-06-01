@@ -22,7 +22,6 @@
         }
         body { 
             font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); margin: 0; overflow-x: hidden; height: 100vh; display: flex; flex-direction: column; 
-            /* CHỐNG BÔI ĐEN VĂN BẢN TOÀN TRANG */
             -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;
         }
         .hidden { display: none !important; }
@@ -48,6 +47,11 @@
         .quiz-container { flex: 1; background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); overflow-y: auto; }
         .opt { padding: 12px 15px; border: 2px solid #eee; border-radius: 10px; margin-bottom: 10px; cursor: pointer; display: flex; align-items: center; background: #fafafa; text-align: left; }
         .opt.selected { background: #fff0f0; border-color: var(--army-red); font-weight: bold; }
+        
+        /* CSS CHO XEM LẠI */
+        .opt.correct-review { background: #d1e7dd !important; border-color: #0f5132 !important; color: #0f5132; font-weight: bold; }
+        .opt.wrong-review { background: #f8d7da !important; border-color: #842029 !important; color: #842029; }
+
         .q-num { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; border: 1px solid #ccc; border-radius: 8px; cursor: pointer; font-weight: bold; }
         .q-num.active { background: var(--navy); color: white; }
         .q-num.done { background: var(--success); color: white; }
@@ -76,7 +80,7 @@
         }
     </style>
 </head>
-<body oncontextmenu="return false;"> <!-- CHỐNG CHUỘT PHẢI TOÀN TRANG -->
+<body oncontextmenu="return false;">
 
     <div id="login-screen" class="overlay">
         <div class="card">
@@ -91,9 +95,8 @@
             <label>Mật khẩu:</label>
             <input type="password" id="login-pw" placeholder="Mật khẩu">
             
-            <!-- THÊM Ô NHẬP MÃ PHÒNG THI -->
-            <label>Mã phòng thi:</label>
-            <input type="text" id="login-room-id-input" placeholder="Nhập ID phòng thi" style="background:#fffbe6; border: 1px solid #ffe58f; margin-bottom: 10px; width:100%; box-sizing:border-box;">
+            <label>Mã kết nối phòng thi:</label>
+            <input type="text" id="login-room-id-input" placeholder="Nhập ID phòng thi để lấy đề" style="background:#fffbe6; border: 1px solid #ffe58f; margin-bottom: 10px; width:100%; box-sizing:border-box;">
 
             <div id="user-info-fields">
                 <hr style="margin:10px 0; border:0; border-top: 1px dashed #ccc;">
@@ -128,7 +131,7 @@
                 <div style="display: flex; flex-wrap: wrap; gap:20px;">
                     <div style="flex: 1; min-width: 320px; background:#f9f9f9; padding:15px; border-radius:10px; border: 1px solid #ddd;">
                         <h4>1. CẤU HÌNH & XUẤT QR</h4>
-                        <label>ID Phòng thi :</label>
+                        <label>ID Kết nối (Phòng thi) :</label>
                         <input type="text" id="admin-room-id" readonly style="background:#eee; font-weight:bold; color:red">
                         <label>Thời gian (phút):</label>
                         <input type="number" id="set-time" value="15" style="width:100%">
@@ -158,7 +161,7 @@
 
             <div id="tab-results" class="hidden">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <h3 style="color:var(--army-red)">THỐNG KÊ KẾT QUẢ (PHÒNG: <span id="res-room-id">...</span>)</h3>
+                    <h3 style="color:var(--army-red)">THỐNG KÊ KẾT QUẢ</h3>
                     <div>
                         <button class="btn-red" onclick="exportResultsToExcel()" style="background:#27ae60; font-size:10px; margin-right:5px">XUẤT FILE EXCEL</button>
                         <button class="btn-red" onclick="clearResultsCloud()" style="background:#c0392b; font-size:10px">XOÁ DỮ LIỆU MÁY CHỦ</button>
@@ -238,7 +241,7 @@
     const USER_MAP = {"D1":"Tiểu đoàn 1", "D2":"Tiểu đoàn 2", "D3":"Tiểu đoàn 3", "D4":"Tiểu đoàn 4", "D5":"Tiểu đoàn 5", "D6":"Tiểu đoàn 6", "P1":"Phòng Đào tạo", "P2":"Phòng Tham mưu", "P3":"Phòng Chính trị", "P4":"Phòng Hậu cần", "K1":"Khoa KHXH", "K2":"Khoa BC hợp thành", "K3":"Khoa Binh chủng", "K4":"Khoa Chuyên môn", "ADMIN":"BỘ PHẬN QUẢN TRỊ"};
     
     let bank = JSON.parse(localStorage.getItem('army_bank_v_final')) || [];
-    let setRoomMap = JSON.parse(localStorage.getItem('army_set_room_map')) || {}; // Lưu mapping Bộ đề -> Mã phòng
+    let setRoomMap = JSON.parse(localStorage.getItem('army_set_room_map')) || {}; 
     let currentActiveSet = "Chung";
     let examQuestions = [], currentQ = 0, answers = [], timeLeft = 0, timer, userData = {}, isReview = false, startTimestamp = 0;
     let currentRoomID = "";
@@ -262,18 +265,9 @@
         renderAdmin();
     };
 
-    // --- LOGIC CHỐNG COPY (PHÍM TẮT) ---
     document.addEventListener('keydown', function(e) {
-        // Khóa F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U (Xem code)
-        if (e.keyCode == 123 || 
-            (e.ctrlKey && e.shiftKey && (e.keyCode == 73 || e.keyCode == 74)) || 
-            (e.ctrlKey && e.keyCode == 85)) {
-            e.preventDefault();
-        }
-        // Khóa Ctrl+C, Ctrl+V, Ctrl+S
-        if (e.ctrlKey && (e.keyCode == 67 || e.keyCode == 86 || e.keyCode == 83)) {
-            e.preventDefault();
-        }
+        if (e.keyCode == 123 || (e.ctrlKey && e.shiftKey && (e.keyCode == 73 || e.keyCode == 74)) || (e.ctrlKey && e.keyCode == 85)) e.preventDefault();
+        if (e.ctrlKey && (e.keyCode == 67 || e.keyCode == 86 || e.keyCode == 83)) e.preventDefault();
     });
 
     function updateHint() {
@@ -310,7 +304,6 @@
         }
         currentRoomID = setRoomMap[currentActiveSet];
         document.getElementById('admin-room-id').value = currentRoomID;
-        document.getElementById('res-room-id').innerText = currentRoomID;
 
         renderAdminSetMenu();
         document.getElementById('current-set-label').innerText = currentActiveSet;
@@ -334,31 +327,7 @@
         qrContainer.innerHTML = "";
         new QRCode(qrContainer, { text: url, width: 160, height: 160 });
         startListeningResults();
-        alert(`Đã tạo QR cho Bộ đề: ${currentActiveSet}\nMã phòng: ${currentRoomID}`);
-    }
-
-    function startListeningResults() {
-        if(!currentRoomID) return;
-        db.ref('quiz_results/' + currentRoomID).on('value', (snapshot) => {
-            const list = document.getElementById('admin-result-list');
-            list.innerHTML = '';
-            if(snapshot.exists()) {
-                const data = snapshot.val();
-                Object.values(data).reverse().forEach(res => {
-                    list.innerHTML += `<tr><td>${res.date}</td><td>${res.duration}</td><td>${res.name}</td><td>${res.unit}</td><td>${res.set}</td><td style="color:red; font-weight:bold">${res.score}</td><td>${res.classification}</td></tr>`;
-                });
-            }
-        });
-    }
-
-    function clearResultsCloud() {
-        if(confirm(`Xoá toàn bộ dữ liệu trên máy chủ của phòng ${currentRoomID}?`)) db.ref('quiz_results/' + currentRoomID).remove();
-    }
-
-    function exportResultsToExcel() {
-        const table = document.getElementById('table-results');
-        const wb = XLSX.utils.table_to_book(table, {sheet: "KetQuaThi"});
-        XLSX.writeFile(wb, `KetQuaThi_Phong_${currentRoomID}.xlsx`);
+        alert(`Đã tạo QR cho Bộ đề: ${currentActiveSet}\nPhòng: ${currentRoomID}`);
     }
 
     function handleLogin() {
@@ -371,25 +340,40 @@
                 renderAdmin(); return;
             } else return alert("Sai mật khẩu Admin!");
         }
+
         currentRoomID = document.getElementById('login-room-id-input').value.trim();
+        let selectedSetName = "Chung";
+        // Tìm Bộ đề từ Mã phòng thi
+        for (let setName in setRoomMap) {
+            if (setRoomMap[setName] === currentRoomID) {
+                selectedSetName = setName; break;
+            }
+        }
+        
         const name = document.getElementById('user-name').value;
         const rank = document.getElementById('user-rank').value;
         const extra = document.getElementById('user-unit-extra').value;
         if (!USER_MAP[id] || pw !== "123") return alert("Thông tin đăng nhập sai!");
         if (!name || !rank || !extra) return alert("Vui lòng nhập đủ thông tin thí sinh!");
+        if (!currentRoomID) return alert("Vui lòng nhập Mã kết nối phòng thi!");
+
         userData = { name, rank, unit: USER_MAP[id], extra, id };
+        
+        let filteredBank = bank.filter(q => (q.set || "Chung") === selectedSetName);
+        if(filteredBank.length === 0) filteredBank = bank.filter(q => (q.set || "Chung") === "Chung");
+        
         const params = new URLSearchParams(window.location.search);
-        const setReq = params.get('s') || "Chung";
-        let filteredBank = bank.filter(q => (q.set || "Chung") === setReq);
-        if(filteredBank.length === 0) filteredBank = bank;
         const qtyReq = parseInt(params.get('q')) || 20;
         const timeReq = parseInt(params.get('t')) || 15;
         const qty = Math.min(qtyReq, filteredBank.length);
+
+        // TRỘN CÂU HỎI NGẪU NHIÊN
         examQuestions = [...filteredBank].sort(() => 0.5 - Math.random()).slice(0, qty);
         timeLeft = timeReq * 60;
+        
         document.getElementById('login-screen').classList.add('hidden');
         document.getElementById('welcome-screen').classList.remove('hidden');
-        document.getElementById('welcome-info').innerHTML = `<b>Thí sinh:</b> ${userData.rank} ${userData.name}<br><b>Đơn vị:</b> ${userData.unit} (${userData.extra})<br><b>Mã phòng thi:</b> ${currentRoomID || "Tự do"}<br><b>Bộ đề thi:</b> ${setReq}<br><b>Số câu hỏi:</b> ${examQuestions.length} câu<br><b>Thời gian:</b> ${timeReq} phút`;
+        document.getElementById('welcome-info').innerHTML = `<b>Thí sinh:</b> ${userData.rank} ${userData.name}<br><b>Đơn vị:</b> ${userData.unit} (${userData.extra})<br><b>Mã phòng:</b> ${currentRoomID}<br><b>Bộ đề:</b> ${selectedSetName}<br><b>Số câu hỏi:</b> ${examQuestions.length} câu<br><b>Thời gian:</b> ${timeReq} phút`;
     }
 
     function startExam() {
@@ -414,6 +398,13 @@
             const d = document.createElement('div');
             const isSel = answers[idx].includes(i);
             d.className = `opt ${isSel ? 'selected' : ''}`;
+            
+            // LOGIC HIỂN THỊ KHI XEM LẠI
+            if (isReview) {
+                if (q.correct.includes(i)) d.classList.add('correct-review');
+                else if (isSel) d.classList.add('wrong-review');
+            }
+
             d.innerHTML = `<b>${String.fromCharCode(65+i)}.</b> &nbsp; ${o}`;
             if (!isReview) d.onclick = () => { answers[idx] = [i]; document.getElementById(`nav-${idx}`).classList.add('done'); loadQ(idx); };
             area.appendChild(d);
@@ -430,15 +421,25 @@
         examQuestions.forEach((q, i) => { if(answers[i].sort().join(',') === q.correct.sort().join(',') && answers[i].length > 0) score++; });
         const final = (score/examQuestions.length)*10;
         const cls = final >= 8 ? "GIỎI" : final >= 6.5 ? "KHÁ" : final >= 5 ? "ĐẠT" : "KHÔNG ĐẠT";
+        
         if(currentRoomID) {
-            const resultData = { date: new Date().toLocaleString('vi-VN'), duration, name: userData.name, unit: userData.unit, set: (new URLSearchParams(window.location.search).get('s') || "Chung"), score: final.toFixed(1), classification: cls };
-            db.ref('quiz_results/' + currentRoomID).push(resultData);
+            db.ref('quiz_results/' + currentRoomID).push({ date: new Date().toLocaleString('vi-VN'), duration, name: userData.name, unit: userData.unit, set: "Bộ đề theo phòng", score: final.toFixed(1), classification: cls });
         }
+        
         document.getElementById('quiz-area').classList.add('hidden');
         document.getElementById('result-area').classList.remove('hidden');
         document.getElementById('res-grade').innerText = cls;
         document.getElementById('res-grade').style.color = final >= 5 ? "var(--success)" : "var(--danger)";
-        document.getElementById('res-summary').innerHTML = `<b>Họ tên:</b> ${userData.name}<br><b>Điểm:</b> <span style="color:red; font-weight:bold">${final.toFixed(1)}</span><br><b>Thời gian:</b> ${duration}<br><b>Mã phòng:</b> ${currentRoomID || "Tự do"}`;
+        document.getElementById('res-summary').innerHTML = `<b>Thí sinh:</b> ${userData.name}<br><b>Điểm:</b> <span style="color:red; font-weight:bold">${final.toFixed(1)}</span><br><b>Thời gian:</b> ${duration}`;
+    }
+
+    function startReview() {
+        isReview = true;
+        document.getElementById('result-area').classList.add('hidden');
+        document.getElementById('quiz-area').classList.remove('hidden');
+        document.getElementById('final-submit-btn').classList.add('hidden');
+        document.getElementById('exit-btn').classList.remove('hidden');
+        loadQ(0);
     }
 
     function showTab(t) { 
@@ -446,6 +447,19 @@
         document.getElementById('tab-results').classList.toggle('hidden', t!=='results'); 
         if(t==='results') startListeningResults(); 
     }
+    
+    function startListeningResults() {
+        if(!currentRoomID) return;
+        db.ref('quiz_results/' + currentRoomID).on('value', (snapshot) => {
+            const list = document.getElementById('admin-result-list'); list.innerHTML = '';
+            if(snapshot.exists()) {
+                Object.values(snapshot.val()).reverse().forEach(res => {
+                    list.innerHTML += `<tr><td>${res.date}</td><td>${res.duration}</td><td>${res.name}</td><td>${res.unit}</td><td>${res.set}</td><td style="color:red; font-weight:bold">${res.score}</td><td>${res.classification}</td></tr>`;
+                });
+            }
+        });
+    }
+
     function saveQuestion() {
         const q = document.getElementById('admin-q').value;
         const opts = [document.getElementById('admin-a').value, document.getElementById('admin-b').value, document.getElementById('admin-c').value, document.getElementById('admin-d').value];
@@ -473,6 +487,8 @@
             b.onclick = () => loadQ(i); nav.appendChild(b);
         });
     }
+    function clearResultsCloud() { if(confirm("Xoá toàn bộ dữ liệu trên máy chủ?")) db.ref('quiz_results/' + currentRoomID).remove(); }
+    function exportResultsToExcel() { const table = document.getElementById('table-results'); const wb = XLSX.utils.table_to_book(table, {sheet: "KetQuaThi"}); XLSX.writeFile(wb, `KetQuaThi_${currentRoomID}.xlsx`); }
 </script>
 </body>
 </html>
